@@ -227,8 +227,8 @@ end
 
 function WIM_FriendsFrame_OnEvent()
     if event == 'WHO_LIST_UPDATE' and WIM_WhoScanInProgress then
-    	if GetNumWhoResults() > 0 then
-			local name, guild, level, race, class, zone = GetWhoInfo(1)
+    	for i=1,GetNumWhoResults() do
+			local name, guild, level, race, class, zone = GetWhoInfo(i)
 
 			if WIM_PlayerCacheQueue[name] then
 				local callbacks = WIM_PlayerCacheQueue[name].callbacks
