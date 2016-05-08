@@ -10,23 +10,36 @@ function WIM_FriendsFrame_SendMessage()
 	WIM_PostMessage(name, "", 5, "", "");
 end
 
-function WIM_ChatEdit_ExtractTellTarget(editBox, msg)
-	-- Grab the first "word" in the string
-	local target = gsub(msg, "(%s*)([^%s]+)(.*)", "%2", 1);
-	if ( (strlen(target) <= 0) or (strsub(target, 1, 1) == "|") ) then
-		return;
+function WIM_ChatEdit_ParseText(editBox, send)
+
+	local target
+
+	local _, _, command, parameter = strfind(editBox:GetText(), '^(/%S+)%s*(%a*)')
+	if command then
+		command = strupper(command)
+		local i = 1
+		while true do
+			if getglobal('SLASH_WHISPER'..i) and command == strupper(TEXT(getglobal('SLASH_WHISPER'..i))) and parameter ~= '' then
+				target = gsub(strlower(parameter), '^%l', strupper)
+				break
+			elseif getglobal('SLASH_REPLY'..i) and command == strupper(TEXT(getglobal('SLASH_REPLY'..i))) and ChatEdit_GetLastTellTarget(editBox) ~= '' then
+				target = ChatEdit_GetLastTellTarget(editBox)
+				break
+			else
+				break
+			end
+			i = i + 1
+		end
 	end
-	
-	if(WIM_Data.hookWispParse) then
-		target = string.gsub(target, "^%l", string.upper)
-		WIM_PostMessage(target, "", 5, "", "");
-		editBox:SetText("");
-		editBox:Hide();
+
+	if target then
+		WIM_PostMessage(target, '', 5, '', '')
+		editBox:SetText('')
+		editBox:Hide()	
 	else
-		WIM_ChatEdit_ExtractTellTarget_orig(editBox, msg);
+		return WIM_ChatEdit_ParseText_orig(editBox, send)
 	end
 end
-
 
 function WIM_HookInspect()
 	if(WIM_InspectIsHooked) then
@@ -295,8 +308,12 @@ function WIM_SetUpHooks()
 	FriendsFrame_SendMessage = WIM_FriendsFrame_SendMessage;
 	
 	--Hook Chat Frame Whisper Parse
-	WIM_ChatEdit_ExtractTellTarget_orig = ChatEdit_ExtractTellTarget;
-	ChatEdit_ExtractTellTarget = WIM_ChatEdit_ExtractTellTarget;
+	WIM_ChatEdit_ParseText_orig = ChatEdit_ParseText
+	ChatEdit_ParseText = WIM_ChatEdit_ParseText
+
+	--Hook Chat Frame Reply
+	WIM_ChatFrame_ReplyTell_orig = ChatFrame_ReplyTell
+	ChatFrame_ReplyTell = WIM_ChatFrame_ReplyTell
 
 	--Hook WhoList_Update
 	WIM_WhoList_Update_orig = WhoList_Update
