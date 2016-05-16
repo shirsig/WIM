@@ -19,17 +19,13 @@ function WIM_ChatEdit_ParseText(editBox, send)
 		command = strupper(command)
 		local i = 1
 		while true do
-			if getglobal('SLASH_WHISPER'..i) then
-				if command == strupper(TEXT(getglobal('SLASH_WHISPER'..i))) and parameter ~= '' then
-					target = gsub(strlower(parameter), '^%l', strupper)
-					break
-				end
-			elseif getglobal('SLASH_REPLY'..i) then
-				if command == strupper(TEXT(getglobal('SLASH_REPLY'..i))) and ChatEdit_GetLastTellTarget(editBox) ~= '' then
-					target = ChatEdit_GetLastTellTarget(editBox)
-					break
-				end
-			else
+			if getglobal('SLASH_WHISPER'..i) and command == strupper(TEXT(getglobal('SLASH_WHISPER'..i))) and parameter ~= '' then
+				target = gsub(strlower(parameter), '^%l', strupper)
+				break
+			elseif getglobal('SLASH_REPLY'..i) and command == strupper(TEXT(getglobal('SLASH_REPLY'..i))) and ChatEdit_GetLastTellTarget(editBox) ~= '' then
+				target = ChatEdit_GetLastTellTarget(editBox)
+				break
+			elseif not getglobal('SLASH_WHISPER'..i) and not getglobal('SLASH_REPLY'..i) then
 				break
 			end
 			i = i + 1
