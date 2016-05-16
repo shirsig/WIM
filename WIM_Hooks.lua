@@ -45,7 +45,7 @@ function WIM_ChatFrame_ReplyTell(chatFrame)
 	chatFrame = chatFrame or DEFAULT_CHAT_FRAME
 	local target = ChatEdit_GetLastTellTarget(chatFrame.editBox)
 	if target ~= '' then
-		WIM_PostMessage(target, '', 5, '', '')
+		WIM_PostMessage(target, '', 5, '', '', true)
 	end
 end
 

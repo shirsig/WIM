@@ -422,88 +422,96 @@ function WIM_ChatFrameSupressor_OnEvent(event)
 end
 
 
-function WIM_PostMessage(user, msg, ttype, from, raw_msg)
-		--[[
-			ttype:
-				1 - Wisper from someone
-				2 - Wisper sent
-				3 - System Message
-				4 - Error Message
-				5 - Show window... Do nothing else...
-		]]--
-		
-		local f,chatBox
-		local isNew = false
-		if not WIM_Windows[user] then
-			if getglobal('WIM_msgFrame'..user) then
-				f = getglobal('WIM_msgFrame'..user)
+function WIM_PostMessage(user, msg, ttype, from, raw_msg, hotkeyFix)
+	--[[
+		ttype:
+			1 - Wisper from someone
+			2 - Wisper sent
+			3 - System Message
+			4 - Error Message
+			5 - Show window... Do nothing else...
+	]]--
+	
+	local f,chatBox
+	local isNew = false
+	if not WIM_Windows[user] then
+		if getglobal('WIM_msgFrame'..user) then
+			f = getglobal('WIM_msgFrame'..user)
+		else
+			f = CreateFrame('Frame', 'WIM_msgFrame'..user,UIParent, 'WIM_msgFrameTemplate')
+		end
+		WIM_SetWindowProps(f)
+		WIM_Windows[user] = {
+			frame = 'WIM_msgFrame'..user,
+			newMSG = true, 
+			is_visible = false, 
+			last_msg = time(),
+		}
+		f.theUser = user
+		getglobal('WIM_msgFrame'..user..'From'):SetText(WIM_GetAlias(user))
+		WIM_Icon_AddUser(user)
+		isNew = true
+		WIM_SetWindowLocation(f)
+		if WIM_Data.characterInfo.show then
+			if table.getn(WIM_Split(user, '-')) == 2 then
+				-- WIM_GetBattleWhoInfo(user)
 			else
-				f = CreateFrame('Frame', 'WIM_msgFrame'..user,UIParent, 'WIM_msgFrameTemplate')
-			end
-			WIM_SetWindowProps(f)
-			WIM_Windows[user] = {
-				frame = 'WIM_msgFrame'..user,
-				newMSG = true, 
-				is_visible = false, 
-				last_msg = time(),
-			}
-			f.theUser = user
-			getglobal('WIM_msgFrame'..user..'From'):SetText(WIM_GetAlias(user))
-			WIM_Icon_AddUser(user)
-			isNew = true
-			WIM_SetWindowLocation(f)
-			if WIM_Data.characterInfo.show then
-				if table.getn(WIM_Split(user, '-')) == 2 then
-					-- WIM_GetBattleWhoInfo(user)
-				else
-					WIM_WhoInfo(user, function()
-						WIM_SetWhoInfo(user)
-					end) 
-				end
-			end
-			WIM_UpdateCascadeStep()
-			WIM_DisplayHistory(user)
-			if(WIM_History[user]) then
-				getglobal(f:GetName()..'HistoryButton'):Show()
+				WIM_WhoInfo(user, function()
+					WIM_SetWhoInfo(user)
+				end) 
 			end
 		end
-		f = getglobal('WIM_msgFrame'..user)
-		chatBox = getglobal('WIM_msgFrame'..user..'ScrollingMessageFrame')
-		msg = WIM_ConvertURLtoLinks(msg)
-		WIM_Windows[user].newMSG = true
-		WIM_Windows[user].last_msg = time()
-		if ttype == 1 then
-			WIM_PlaySoundWisp()
-			WIM_AddToHistory(user, from, raw_msg, false)
-			WIM_RecentListAdd(user)
-			chatBox:AddMessage(WIM_getTimeStamp()..msg, WIM_Data.displayColors.wispIn.r, WIM_Data.displayColors.wispIn.g, WIM_Data.displayColors.wispIn.b)
-		elseif ttype == 2 then
-			WIM_AddToHistory(user, from, raw_msg, true)
-			WIM_RecentListAdd(user)
-			chatBox:AddMessage(WIM_getTimeStamp()..msg, WIM_Data.displayColors.wispOut.r, WIM_Data.displayColors.wispOut.g, WIM_Data.displayColors.wispOut.b)
-		elseif ttype == 3 then
-			chatBox:AddMessage(msg, WIM_Data.displayColors.sysMsg.r, WIM_Data.displayColors.sysMsg.g, WIM_Data.displayColors.sysMsg.b)
-		elseif ttype == 4 then
-			chatBox:AddMessage(msg, WIM_Data.displayColors.errorMsg.r, WIM_Data.displayColors.errorMsg.g, WIM_Data.displayColors.errorMsg.b)
+		WIM_UpdateCascadeStep()
+		WIM_DisplayHistory(user)
+		if(WIM_History[user]) then
+			getglobal(f:GetName()..'HistoryButton'):Show()
 		end
-		if WIM_PopOrNot(isNew) or ttype == 2 or ttype == 5 then
-			WIM_Windows[user].newMSG = false
-			if ttype == 2 and WIM_Data.popOnSend == false then
-				--[ do nothing, user prefers not to pop on send
-			else
-				f:Show()
-				if ttype ==5 then
-					f:Raise()
-					getglobal(f:GetName()..'MsgBox'):SetFocus()
-				end
+	end
+	f = getglobal('WIM_msgFrame'..user)
+	chatBox = getglobal('WIM_msgFrame'..user..'ScrollingMessageFrame')
+	msg = WIM_ConvertURLtoLinks(msg)
+	WIM_Windows[user].newMSG = true
+	WIM_Windows[user].last_msg = time()
+	if ttype == 1 then
+		WIM_PlaySoundWisp()
+		WIM_AddToHistory(user, from, raw_msg, false)
+		WIM_RecentListAdd(user)
+		chatBox:AddMessage(WIM_getTimeStamp()..msg, WIM_Data.displayColors.wispIn.r, WIM_Data.displayColors.wispIn.g, WIM_Data.displayColors.wispIn.b)
+	elseif ttype == 2 then
+		WIM_AddToHistory(user, from, raw_msg, true)
+		WIM_RecentListAdd(user)
+		chatBox:AddMessage(WIM_getTimeStamp()..msg, WIM_Data.displayColors.wispOut.r, WIM_Data.displayColors.wispOut.g, WIM_Data.displayColors.wispOut.b)
+	elseif ttype == 3 then
+		chatBox:AddMessage(msg, WIM_Data.displayColors.sysMsg.r, WIM_Data.displayColors.sysMsg.g, WIM_Data.displayColors.sysMsg.b)
+	elseif ttype == 4 then
+		chatBox:AddMessage(msg, WIM_Data.displayColors.errorMsg.r, WIM_Data.displayColors.errorMsg.g, WIM_Data.displayColors.errorMsg.b)
+	end
+	if WIM_PopOrNot(isNew) or ttype == 2 or ttype == 5 then
+		WIM_Windows[user].newMSG = false
+		if ttype == 2 and WIM_Data.popOnSend == false then
+			--[ do nothing, user prefers not to pop on send
+		else
+			f:Show()
+			if ttype ==5 then
+				f:Raise()
+				getglobal(f:GetName()..'MsgBox'):SetFocus()
 			end
 		end
-		WIM_UpdateScrollBars(chatBox)
-		WIM_Icon_DropDown_Update()
-		if WIM_HistoryFrame:IsVisible() then
-			WIM_HistoryViewNameScrollBar_Update()
-			WIM_HistoryViewFiltersScrollBar_Update()
-		end
+	end
+	WIM_UpdateScrollBars(chatBox)
+	WIM_Icon_DropDown_Update()
+	if WIM_HistoryFrame:IsVisible() then
+		WIM_HistoryViewNameScrollBar_Update()
+		WIM_HistoryViewFiltersScrollBar_Update()
+	end
+
+	if hotkeyFix then
+		local orig = getglobal(f:GetName()..'MsgBox'):GetScript('OnChar')
+		getglobal(f:GetName()..'MsgBox'):SetScript('OnChar', function()
+			getglobal(f:GetName()..'MsgBox'):SetText('')
+			getglobal(f:GetName()..'MsgBox'):SetScript('OnChar', orig)
+		end)
+	end
 end
 
 function WIM_SetWindowLocation(theWin)
