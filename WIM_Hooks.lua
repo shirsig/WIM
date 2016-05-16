@@ -19,12 +19,16 @@ function WIM_ChatEdit_ParseText(editBox, send)
 		command = strupper(command)
 		local i = 1
 		while true do
-			if getglobal('SLASH_WHISPER'..i) and command == strupper(TEXT(getglobal('SLASH_WHISPER'..i))) and parameter ~= '' then
-				target = gsub(strlower(parameter), '^%l', strupper)
-				break
-			elseif getglobal('SLASH_REPLY'..i) and command == strupper(TEXT(getglobal('SLASH_REPLY'..i))) and ChatEdit_GetLastTellTarget(editBox) ~= '' then
-				target = ChatEdit_GetLastTellTarget(editBox)
-				break
+			if getglobal('SLASH_WHISPER'..i) then
+				if command == strupper(TEXT(getglobal('SLASH_WHISPER'..i))) and parameter ~= '' then
+					target = gsub(strlower(parameter), '^%l', strupper)
+					break
+				end
+			elseif getglobal('SLASH_REPLY'..i) then
+				if command == strupper(TEXT(getglobal('SLASH_REPLY'..i))) and ChatEdit_GetLastTellTarget(editBox) ~= '' then
+					target = ChatEdit_GetLastTellTarget(editBox)
+					break
+				end
 			else
 				break
 			end
@@ -38,6 +42,14 @@ function WIM_ChatEdit_ParseText(editBox, send)
 		editBox:Hide()	
 	else
 		return WIM_ChatEdit_ParseText_orig(editBox, send)
+	end
+end
+
+function WIM_ChatFrame_ReplyTell(chatFrame)
+	chatFrame = chatFrame or DEFAULT_CHAT_FRAME
+	local target = ChatEdit_GetLastTellTarget(chatFrame.editBox)
+	if target ~= '' then
+		WIM_PostMessage(target, '', 5, '', '')
 	end
 end
 
@@ -300,8 +312,60 @@ function WIM_WhoList_Update()
 end
 
 function WIM_SetUpHooks()
-	if(WIM_ButtonsHooked) then
-		return;
+	if WIM_ButtonsHooked then
+		return
+	end
+
+	do
+		local supress
+		local orig = ChatFrameEditBox:GetScript('OnTextSet')
+		ChatFrameEditBox:SetScript('OnTextSet', function()
+			if not supress then
+				orig()
+			else
+				supress = false
+			end
+		end)
+		ChatFrameEditBox:SetScript('OnChar', function()
+			if IsControlKeyDown() then -- TODO problem is ctrl-v, maybe find a better solution
+				return
+			end
+
+			local text = this:GetText()
+			local _, _, command, name = strfind(text, '^(/%S+)%s*(%a*)')
+			if command then
+				local i = 1
+				while true do
+					if getglobal('SLASH_WHISPER'..i) then
+
+						if strupper(command) == strupper(TEXT(getglobal('SLASH_WHISPER'..i))) and name ~= '' then
+
+							local function tryCompleting(candidate)
+								if strsub(strupper(candidate), 1, strlen(name)) == strupper(name) then
+									supress = true
+									this:SetText(text..strsub(candidate, strlen(name) + 1))
+									this:HighlightText(strlen(text), -1)
+									return
+								end
+							end
+
+							for i=1,GetNumFriends() do
+								tryCompleting(GetFriendInfo(i))
+							end
+
+							for i=1,GetNumGuildMembers(true) do
+								tryCompleting(GetGuildRosterInfo(i))
+							end
+
+							break
+						end
+					else
+						break
+					end
+					i = i + 1
+				end
+			end
+		end)
 	end
 
 	--Hook Friends Frame Send Message Button
