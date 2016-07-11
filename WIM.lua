@@ -295,21 +295,21 @@ local function playerCheck(player, k)
 	if not WIM_Data.blockLowLevel then
 		return k()
 	end
-	
+
 	if WIM_WhisperedTo[player] then
 		return k()
 	end
 	
 	for i=1, GetNumFriends() do
 		name = GetFriendInfo(i)
-		if strupper(name) == strupper(player) then
+		if name == player then
 			return k()
 		end
 	end
 
 	for i=1, GetNumGuildMembers(true) do
 		name = GetGuildRosterInfo(i)
-		if strupper(name) == strupper(player) then
+		if name == player then
 			return k()
 		end
 	end
