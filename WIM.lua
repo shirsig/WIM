@@ -114,7 +114,8 @@ WIM_Data_DEFAULTS = {
 	},
 	showAFK = true,
 	useEscape = true,
-	hookWispParse = true
+	hookWispParse = true,
+	blockLowLevel = false,
 };
 --[initialize defualt values
 WIM_Data = WIM_Data_DEFAULTS;
@@ -290,7 +291,11 @@ do
 	end
 end
 
-local function player_check(player, k)
+local function playerCheck(player, k)
+	if not WIM_Data.blockLowLevel then
+		return k()
+	end
+	
 	if WIM_WhisperedTo[player] then
 		return k()
 	end
@@ -333,7 +338,7 @@ function WIM_ChatFrame_OnEvent(event)
 		ChatEdit_SetLastTellTarget(ChatFrameEditBox,arg2);
 	elseif event == 'CHAT_MSG_WHISPER' then
 		local content, sender = arg1, arg2
-		player_check(sender, function()
+		playerCheck(sender, function()
 			if WIM_FilterResult(content) ~= 1 and WIM_FilterResult(content) ~= 2 then
 				msg = "[|Hplayer:"..sender.."|h"..WIM_GetAlias(sender, true).."|h]: "..content
 				WIM_PostMessage(sender, msg, 1, sender, content)
