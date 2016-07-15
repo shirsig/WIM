@@ -266,7 +266,6 @@ function WIM_Update()
 	if not WIM_LastWhoListUpdate or GetTime() - WIM_LastWhoListUpdate > 5 then
 		for name, info in WIM_PlayerCacheQueue do
 			if info.attempts <= 5 and not info.last_sent or GetTime() - info.last_sent > ldexp(2, info.attempts) then
-				Aux.log('kek')
 				SendWho('n-"'..name..'"')
 				info.last_sent = GetTime()
 				info.attempts = info.attempts + 1
