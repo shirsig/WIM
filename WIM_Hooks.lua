@@ -247,33 +247,37 @@ end
 
 
 function WIM_FriendsFrame_OnEvent()
-    if event == 'WHO_LIST_UPDATE' and WIM_WhoScanInProgress then
-    	for i=1,GetNumWhoResults() do
-			local name, guild, level, race, class, zone = GetWhoInfo(i)
+    if event == 'WHO_LIST_UPDATE' then
+    	WIM_LastWhoListUpdate = GetTime()
 
-			if WIM_PlayerCacheQueue[name] then
-				local callbacks = WIM_PlayerCacheQueue[name].callbacks
-				WIM_PlayerCacheQueue[name] = nil
+    	if WIM_WhoScanInProgress then
+	    	for i=1,GetNumWhoResults() do
+				local name, guild, level, race, class, zone = GetWhoInfo(i)
 
-				WIM_PlayerCache[name] = {
-					class = class,
-					level = level,
-					race = race,
-					guild = guild,
-				}
+				if WIM_PlayerCacheQueue[name] then
+					local callbacks = WIM_PlayerCacheQueue[name].callbacks
+					WIM_PlayerCacheQueue[name] = nil
 
-				for _, callback in callbacks do
-					callback(WIM_PlayerCache[name])
+					WIM_PlayerCache[name] = {
+						class = class,
+						level = level,
+						race = race,
+						guild = guild,
+					}
+
+					for _, callback in callbacks do
+						callback(WIM_PlayerCache[name])
+					end
 				end
 			end
-		end
 
-		if WIM_PlayerCacheQueueEmpty() then
-			WIM_WhoScanInProgress = false
-			SetWhoToUI(0)
-		end
+			if WIM_PlayerCacheQueueEmpty() then
+				WIM_WhoScanInProgress = false
+				SetWhoToUI(0)
+			end
 
-		return
+			return
+		end
 	end
 
 	return WIM_FriendsFrame_OnEvent_orig(event)

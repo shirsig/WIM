@@ -255,39 +255,36 @@ end
 
 function WIM_PlayerCacheQueueEmpty()
 	for _, info in WIM_PlayerCacheQueue do
-		if info.count > 0 then
+		if info.attempts <= 5 then
 			return false
 		end
 	end
 	return true
 end
 
-do
-	local last_sent
-
-	function WIM_Update()
-		if not last_sent or GetTime() - last_sent > 2 then
-			for name, info in WIM_PlayerCacheQueue do
-				if info.count > 0 then
-					SendWho('n-"'..name..'"')
-					last_sent = GetTime()
-					info.count = info.count - 1
-					return
-				end
+function WIM_Update()
+	if not WIM_LastWhoListUpdate or GetTime() - WIM_LastWhoListUpdate > 5 then
+		for name, info in WIM_PlayerCacheQueue do
+			if info.attempts <= 5 and not info.last_sent or GetTime() - info.last_sent > ldexp(2, info.attempts) then
+				Aux.log('kek')
+				SendWho('n-"'..name..'"')
+				info.last_sent = GetTime()
+				info.attempts = info.attempts + 1
+				return
 			end
 		end
 	end
+end
 
-	function WIM_WhoInfo(name, callback)
-		if WIM_PlayerCache[name] then
-			callback(WIM_PlayerCache[name])
-		else
-			WIM_WhoScanInProgress = true
-			SetWhoToUI(1)
-			WIM_PlayerCacheQueue[name] = WIM_PlayerCacheQueue[name] or { callbacks = {} }
-			WIM_PlayerCacheQueue[name].count = 7
-			tinsert(WIM_PlayerCacheQueue[name].callbacks, callback)
-		end
+function WIM_WhoInfo(name, callback)
+	if WIM_PlayerCache[name] then
+		callback(WIM_PlayerCache[name])
+	else
+		WIM_WhoScanInProgress = true
+		SetWhoToUI(1)
+		WIM_PlayerCacheQueue[name] = WIM_PlayerCacheQueue[name] or { callbacks = {} }
+		WIM_PlayerCacheQueue[name].attempts = 0
+		tinsert(WIM_PlayerCacheQueue[name].callbacks, callback)
 	end
 end
 
