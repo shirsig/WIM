@@ -406,7 +406,19 @@ function WIM_SetUpHooks()
 	
 	--Hook ContainerFrameItemButton_OnClick
 	WIM_ContainerFrameItemButton_OnClick_orig = ContainerFrameItemButton_OnClick;
-	ContainerFrameItemButton_OnClick = function(button, ignoreModifiers) WIM_ContainerFrameItemButton_OnClick_orig(button, ignoreModifiers); WIM_ItemButton_OnClick(button, ignoreModifiers); end;
+	ContainerFrameItemButton_OnClick = function(button, ignoreModifiers)
+
+			if ( button == "LeftButton" ) and (not ignoreModifiers) and ( IsShiftKeyDown() ) and ( not ChatFrameEditBox:IsVisible() ) and (GameTooltipTextLeft1:GetText()) then
+				if(WIM_EditBoxInFocus) then
+					WIM_EditBoxInFocus:Insert(GetContainerItemLink(this:GetParent():GetID(), this:GetID()));
+					return
+				end
+			end
+
+		WIM_ContainerFrameItemButton_OnClick_orig(button, ignoreModifiers); 
+		-- WIM_ItemButton_OnClick(button, ignoreModifiers);
+
+	end;
 	
 	if (AllInOneInventoryFrameItemButton_OnClick) then
 		--Hook ContainerFrameItemButton_OnClick
