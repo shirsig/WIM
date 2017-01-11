@@ -350,11 +350,11 @@ function WIM_SetUpHooks()
 							end
 
 							for i=1,GetNumFriends() do
-								tryCompleting(GetFriendInfo(i))
+								tryCompleting(GetFriendInfo(i) or '')
 							end
 
 							for i=1,GetNumGuildMembers(true) do
-								tryCompleting(GetGuildRosterInfo(i))
+								tryCompleting(GetGuildRosterInfo(i) or '')
 							end
 
 							break
