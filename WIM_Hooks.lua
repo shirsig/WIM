@@ -14,7 +14,7 @@ function WIM_ChatEdit_ParseText(editBox, send)
 
 	local target
 
-	local _, _, command, parameter = strfind(editBox:GetText(), '^(/%S+)%s*(%a*)')
+	local _, _, command, parameter = strfind(editBox:GetText(), '^(/%S+)%s*(%S*)')
 	if command then
 		command = strupper(command)
 		local i = 1
