@@ -7,6 +7,7 @@
 ## DefaultState: Enabled
 ## OptionalDeps: Titan
 ## SavedVariables: WIM_Data, WIM_Alias, WIM_Filters, WIM_History
+window.lua
 WIM.xml
 WIM_UrlCopy.xml
 WIM_Icon.xml

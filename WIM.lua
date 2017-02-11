@@ -436,11 +436,7 @@ function WIM_PostMessage(user, msg, ttype, from, raw_msg, hotkeyFix)
 	local f,chatBox
 	local isNew = false
 	if not WIM_Windows[user] then
-		if getglobal('WIM_msgFrame'..user) then
-			f = getglobal('WIM_msgFrame'..user)
-		else
-			f = CreateFrame('Frame', 'WIM_msgFrame'..user,UIParent, 'WIM_msgFrameTemplate')
-		end
+		f = getglobal('WIM_msgFrame' .. user) or WIM_create_window(user)
 		WIM_SetWindowProps(f)
 		WIM_Windows[user] = {
 			frame = 'WIM_msgFrame'..user,
@@ -449,7 +445,7 @@ function WIM_PostMessage(user, msg, ttype, from, raw_msg, hotkeyFix)
 			last_msg = time(),
 		}
 		f.theUser = user
-		getglobal('WIM_msgFrame'..user..'From'):SetText(WIM_GetAlias(user))
+		getglobal('WIM_msgFrame' .. user .. 'BackdropFrom'):SetText(WIM_GetAlias(user))
 		WIM_Icon_AddUser(user)
 		isNew = true
 		WIM_SetWindowLocation(f)
@@ -905,8 +901,8 @@ function WIM_CloseConvo(theUser)
 	
 	getglobal(WIM_Windows[theUser].frame):Hide();
 	getglobal(WIM_Windows[theUser].frame.."ScrollingMessageFrame"):Clear();
-	getglobal(WIM_Windows[theUser].frame.."ClassIcon"):SetTexture("Interface\\AddOns\\WIM\\Images\\classBLANK");
-	getglobal(WIM_Windows[theUser].frame.."CharacterDetails"):SetText("");
+	getglobal(WIM_Windows[theUser].frame.."BackdropClassIcon"):SetTexture("Interface\\AddOns\\WIM\\Images\\classBLANK");
+	getglobal(WIM_Windows[theUser].frame.."BackdropCharacterDetails"):SetText("");
 	WIM_Windows[theUser] = nil;
 	WIM_IconItems[theUser] = nil;
 	
@@ -948,21 +944,21 @@ function WIM_UserWithClassColor(theUser)
 end
 
 function WIM_SetWhoInfo(theUser)
-	local classIcon = getglobal(WIM_Windows[theUser].frame.."ClassIcon");
+	local classIcon = getglobal(WIM_Windows[theUser].frame.."BackdropClassIcon");
 	if(WIM_Data.characterInfo.classIcon and WIM_ClassIcons[WIM_PlayerCache[theUser].class]) then
 		classIcon:SetTexture(WIM_ClassIcons[WIM_PlayerCache[theUser].class]);
 	else
 		classIcon:SetTexture("Interface\\AddOns\\WIM\\Images\\classBLANK");
 	end
 	if(WIM_Data.characterInfo.classColor) then	
-		getglobal(WIM_Windows[theUser].frame.."From"):SetText(WIM_UserWithClassColor(theUser));
+		getglobal(WIM_Windows[theUser].frame.."BackdropFrom"):SetText(WIM_UserWithClassColor(theUser));
 	end
 	if(WIM_Data.characterInfo.details) then	
 		local tGuild = "";
 		if(WIM_PlayerCache[theUser].guild ~= "") then
 			tGuild = "<"..WIM_PlayerCache[theUser].guild.."> ";
 		end
-		getglobal(WIM_Windows[theUser].frame.."CharacterDetails"):SetText("|cffffffff"..tGuild..WIM_PlayerCache[theUser].level.." "..WIM_PlayerCache[theUser].race.." "..WIM_PlayerCache[theUser].class.."|r");
+		getglobal(WIM_Windows[theUser].frame.."BackdropCharacterDetails"):SetText("|cffffffff"..tGuild..WIM_PlayerCache[theUser].level.." "..WIM_PlayerCache[theUser].race.." "..WIM_PlayerCache[theUser].class.."|r");
 	end
 end
 
