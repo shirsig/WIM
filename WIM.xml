@@ -565,32 +565,11 @@
 			</Frame>
 		</Frames>
 		<Scripts>
-			<OnLoad>
-				this:RegisterForDrag("LeftButton");
-			</OnLoad>
-			<OnDragStart>
-				this:StartMoving();
-				this.isMoving = true;
-			</OnDragStart>
-			<OnDragStop>
-				this:StopMovingOrSizing();
-				this.isMoving = false;
-			</OnDragStop>
 			<OnShow>
-				local user = this.theUser;
-				WIM_Windows[user].newMSG = false;
-				WIM_Windows[user].is_visible = true;
-				if(WIM_Data.autoFocus == true) then
-					getglobal(this:GetName().."MsgBox"):SetFocus();
-				end
-				WIM_LoadShortcutFrame();
-				WIM_WindowOnShow();
+
 			</OnShow>
 			<OnHide>
-				getglobal(this:GetName().."IgnoreConfirm"):Hide();
-				local user = this.theUser;
-				WIM_Windows[user].is_visible = false;
-				WIM_Windows[user].newMSG = false;
+
 			</OnHide>
 		</Scripts>
 	</Frame>

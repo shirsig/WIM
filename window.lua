@@ -677,22 +677,40 @@ function WIM_create_window(user)
 	local f = CreateFrame('Frame', fName, UIParent)
 
 	f:SetClampedToScreen(true)
-	f:SetFrameStrata("DIALOG")
+	f:SetFrameStrata'DIALOG'
 	f:SetMovable(true)
 	f:SetToplevel(true)
 	f:SetWidth(384)
 	f:SetHeight(256)
 	f:EnableMouse(true)
---	f:SetPoint("TOPLEFT", WindowParent, "BOTTOMLEFT", 25, WindowParent:GetTop()-125)
-	f:RegisterForDrag("LeftButton");
-	f:SetScript("OnDragStart", MessageWindow_MovementControler_OnDragStart);
-	f:SetScript("OnDragStop", MessageWindow_MovementControler_OnDragStop);
-	f:SetScript("OnMouseUp", MessageWindow_MovementControler_OnDragStop);
-	f:SetScript("OnShow", MessageWindow_Frame_OnShow);
-	f:SetScript("OnHide", MessageWindow_Frame_OnHide);
-	f:SetScript("OnUpdate", MessageWindow_Frame_OnUpdate);
+	f:SetPoint('TOPLEFT', UIParent, 'BOTTOMLEFT', 25, -125)
+	f:RegisterForDrag'LeftButton'
+	f:SetScript('OnDragStart', function()
+		this:StartMoving()
+		this.isMoving = true
+	end)
+	f:SetScript('OnDragStop', function()
+		this:StopMovingOrSizing()
+		this.isMoving = false
+	end)
+	f:SetScript('OnShow', function()
+		local user = this.theUser
+		WIM_Windows[user].newMSG = false
+		WIM_Windows[user].is_visible = true
+		if WIM_Data.autoFocus == true then
+			getglobal(this:GetName() .. 'MsgBox'):SetFocus()
+		end
+		WIM_LoadShortcutFrame()
+		WIM_WindowOnShow()
+	end)
+	f:SetScript('OnHide', function()
+		getglobal(this:GetName() .. 'IgnoreConfirm'):Hide()
+		local user = this.theUser
+		WIM_Windows[user].is_visible = false
+		WIM_Windows[user].newMSG = false
+	end)
+	f:SetScript('OnUpdate', MessageWindow_Frame_OnUpdate)
 	f.isWimWindow = true
-	f.helperFrame = helperFrame
 	f.animation = {}
 
 	f.SetScale_Orig = f.SetScale
@@ -810,18 +828,6 @@ function WIM_create_window(user)
 
 	f.UpdateCharDetails = function(self)
 		self.widgets.char_info:SetText(skin.message_window.widgets.char_info.format(self, self.guild, self.level, self.race, self.class))
-	end
-
-	f.WhoCallback = function(result)
-		if result and result.Online and result.Name == f.theUser then
-			f.class = result.Class;
-			f.level = result.Level;
-			f.race = result.Race;
-			f.guild = result.Guild;
-			f.location = result.Zone;
---			f:UpdateIcon();
-			f:UpdateCharDetails();
-		end
 	end
 
 	f.SendWho = function(self)
