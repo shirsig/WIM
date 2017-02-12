@@ -2,6 +2,13 @@ local _G = getfenv(0)
 
 local ShortcutCount = 5
 
+local function formatDetails(window, guild, level, race, class)
+	if(guild ~= "") then
+		guild = "<"..guild.."> ";
+	end
+	return "|cffffffff"..guild..level.." "..race.." "..class.."|r";
+end
+
 local skin = {
 	message_window = {
 		texture = [[Interface\AddOns\WIM\textures\message_window]],
@@ -80,37 +87,11 @@ local skin = {
 				--d3 = {.5, .75, .5, 1, .75, .75, .75, 1},
 				--bnd = {.25, .75, .25, 1, .5, .75, .5, 1}
 			},
-			client_icon = {
-				texture = [[Interface\AddOns\WIM\textures\client_icons]],
-				chatAlphaMask = [[Interface\AddOns\WIM\textures\chatAlphaMask]],
-				width = 64,
-				height = 64,
-				points = {
-					{"TOPLEFT", "window", "TOPLEFT", -10, 12}
-				},
-				is_round = true,
-				hots = {.5, .5, .5, .75, .75, .5, .75, .75},
-				--druid = {0, 0, 0, .25, .25, 0, .25, .25},
-				--hunter = {.25, 0, .25, .25, .5, 0, .5, .25},
-				--mage = {.5, 0, .5, .25, .75, 0, .75, .25},
-				--paladin = {.75, 0, .75, .25, 1, 0, 1, .25},
-				--priest = {0, .25, 0, .5, .25, .25, .25, .5},
-				--rogue = {.25, .25, .25, .5, .5, .25, .5, .5},
-				--shaman = {.5, .25, .5, .5, .75, .25, .75, .5},
-				--warlock = {.75, .25, .75, .5, 1, .25, 1, .5},
-				--warrior = {0, .5, 0, .75, .25, .5, .25, .75},
-				ow = {.75, .5, .75, .75, 1, .5, 1, .75},
-				hs = {0, .75, 0, 1, .25, .75, .25, 1},
-				--gm = {.25, .5, .25, .75, .5, .5, .5, .75},
-				sc2 = {.75, .75, .75, 1, 1, .75, 1, 1},
-				d3 = {.5, .75, .5, 1, .75, .75, .75, 1},
-				bnd = {.25, .75, .25, 1, .5, .75, .5, 1}
-			},
 			from = {
 				points = {
 					{"TOPLEFT", "window", "TOPLEFT", 50, -8}
 				},
-				font = "FriendsFont_Normal", --GameFontNormalLarge
+				font = 'GameFontNormalLarge', -- TODO FriendsFont_Normal
 				font_color = "ffffff",
 				font_height = 16,
 				font_flags = "",
@@ -421,14 +402,94 @@ local skin = {
 	}
 }
 
+local db = {
+	skin = {
+		selected = "WIM Classic",
+		font = "ChatFontNormal",
+		font_outline = "",
+		suggest = true,
+	},
+}
+
+db.displayColors = {
+	sysMsg = {
+		r=1,
+		g=0.6627450980392157,
+		b=0
+	},
+	errorMsg = {
+		r=1,
+		g=0,
+		b=0
+	},
+	useSkin = true,
+};
+db.fontSize = 12;
+db.windowAlpha = 80;
+db.windowOnTop = true;
+db.keepFocus = true;
+db.keepFocusRested = true;
+db.autoFocus = false;
+db.winSize = {
+	width = 333,
+	height = 220,
+	scale = 100,
+	strata = "DIALOG"
+};
+db.winLoc = {
+	left =217,
+	top =664
+};
+db.winCascade = {
+	enabled = true,
+	direction = 8
+};
+db.winFade = true;
+db.winAnimation = true;
+db.wordwrap_indent = false;
+db.coloredNames = true;
+db.escapeToHide = true;
+db.ignoreArrowKeys = true;
+db.pop_rules = {};
+db.whoLookups = true;
+db.hoverLinks = false;
+db.tabAdvance = false;
+db.clampToScreen = true;
+
+db.formatting = {
+	bracketing = {
+		enabled = true,
+		type = 1,
+	},
+};
+
+local function RGBHexToPercent(rgbStr)
+	local R, G, B = string.sub(rgbStr, 1, 2), string.sub(rgbStr, 3, 4), string.sub(rgbStr, 5, 6);
+	return tonumber(R, 16)/255, tonumber(G, 16)/255, tonumber(B, 16)/255;
+end
+
+local function setPointsToObj(obj, pointsTable)
+	obj:ClearAllPoints()
+	for i = 1, getn(pointsTable) do
+		local point, relativeTo, relativePoint, offx, offy = unpack(pointsTable[i]);
+		if relativeTo and type(relativeTo) == 'string' then
+			if string.lower(relativeTo) == 'window' then
+				relativeTo = obj.parentWindow
+			else
+				relativeTo = obj.parentWindow.widgets[relativeTo]
+			end
+			relativeTo = relativeTo or UIPanel
+		end
+		obj:SetPoint(point, relativeTo, relativePoint, offx, offy)
+	end
+end
+
 function WIM_SetWidgetFont(f, widgetSkinTable)
 	if widgetSkinTable.font then
 		if _G[widgetSkinTable.font] then
 			f:SetFontObject(_G[widgetSkinTable.font])
 			local font, height, flags = _G[widgetSkinTable.font]:GetFont()
 			f:SetFont(font, widgetSkinTable.font_height or height, widgetSkinTable.font_flags or flags)
-		elseif libs.SML.MediaTable.font[widgetSkinTable.font] then
-			f:SetFont(libs.SML.MediaTable.font[widgetSkinTable.font], widgetSkinTable.font_height or 12, widgetSkinTable.font_flags or "")
 		else
 			local font, height, flags = _G["ChatFontNormal"]:GetFont()
 			f:SetFont(font, widgetSkinTable.font_height or 12, widgetSkinTable.font_flags or "")
@@ -584,12 +645,8 @@ function WIM_ApplySkinToWindow(f)
 	local chat_display = f.widgets.chat_display
 	WIM_ApplySkinToWidget(chat_display)
 	local font, height, flags
-	if(not db.skin.suggest) then
-		if _G[db.skin.font] then
-			font, height, flags = _G[db.skin.font]:GetFont()
-		else
-			font = libs.SML.MediaTable.font[db.skin.font] or _G["ChatFontNormal"]:GetFont()
-		end
+	if not db.skin.suggest then
+		font, height, flags = _G[db.skin.font]:GetFont()
 		chat_display:SetFont(font, db.fontSize + 2, db.skin.font_outline)
 	end
 
@@ -602,23 +659,23 @@ function WIM_ApplySkinToWindow(f)
 	--msg_box:SetTextColor(skin.message_window.widgets.msg_box.font_color[1], skin.message_window.widgets.msg_box.font_color[2], skin.message_window.widgets.msg_box.font_color[3])
 
 
-	--apply skin to registered widgets
-	for widget, _ in pairs(windows.widgets) do
-		if f.widgets[widget] and skin.message_window.widgets[widget] then
-			dPrint("Applying skin to '"..widget.."'.")
-			WIM_ApplySkinToWidget(f.widgets[widget])
-		end
-	end
+	--apply skin to registered widgets TODO
+--	for widget, _ in pairs(windows.widgets) do
+--		if f.widgets[widget] and skin.message_window.widgets[widget] then
+--			dPrint("Applying skin to '"..widget.."'.")
+--			WIM_ApplySkinToWidget(f.widgets[widget])
+--		end
+--	end
 
 	f:UpdateProps()
-	f:UpdateIcon()
+--	f:UpdateIcon()
 	f:UpdateCharDetails()
 end
 
 function WIM_create_window(user)
 	local fName = 'WIM_msgFrame' .. user
 	local f = CreateFrame('Frame', fName, UIParent)
-	-- set frame's initial properties
+
 	f:SetClampedToScreen(true)
 	f:SetFrameStrata("DIALOG")
 	f:SetMovable(true)
@@ -641,59 +698,59 @@ function WIM_create_window(user)
 	f.SetScale_Orig = f.SetScale
 	f.SetScale = scaleWindow
 
-	f.widgets = {};
+	f.widgets = {}
 	local widgets = f.widgets
 
 	-- add window backdrop frame
 	widgets.Backdrop = CreateFrame("Frame", fName.."Backdrop", f)
 	widgets.Backdrop:SetToplevel(false)
-	widgets.Backdrop:SetAllPoints(f);
-	widgets.class_icon = widgets.Backdrop:CreateTexture(fName.."BackdropClassIcon", "BACKGROUND");
-	widgets.class_icon.widgetName = "class_icon";
-	widgets.class_icon.parentWindow = f;
-	widgets.Backdrop.tl = widgets.Backdrop:CreateTexture(fName.."Backdrop_TL", "BORDER");
-	widgets.Backdrop.tr = widgets.Backdrop:CreateTexture(fName.."Backdrop_TR", "BORDER");
-	widgets.Backdrop.bl = widgets.Backdrop:CreateTexture(fName.."Backdrop_BL", "BORDER");
-	widgets.Backdrop.br = widgets.Backdrop:CreateTexture(fName.."Backdrop_BR", "BORDER");
-	widgets.Backdrop.t  = widgets.Backdrop:CreateTexture(fName.."Backdrop_T" , "BORDER");
-	widgets.Backdrop.b  = widgets.Backdrop:CreateTexture(fName.."Backdrop_B" , "BORDER");
-	widgets.Backdrop.l  = widgets.Backdrop:CreateTexture(fName.."Backdrop_L" , "BORDER");
-	widgets.Backdrop.r  = widgets.Backdrop:CreateTexture(fName.."Backdrop_R" , "BORDER");
-	widgets.Backdrop.bg = widgets.Backdrop:CreateTexture(fName.."Backdrop_BG", "BORDER");
-	widgets.from = widgets.Backdrop:CreateFontString(fName.."BackdropFrom", "OVERLAY", "GameFontNormalLarge");
-	widgets.from.widgetName = "from";
-	widgets.char_info = widgets.Backdrop:CreateFontString(fName.."BackdropCharacterDetails", "OVERLAY", "GameFontNormal");
-	widgets.char_info.widgetName = "char_info";
+	widgets.Backdrop:SetAllPoints(f)
+	widgets.class_icon = widgets.Backdrop:CreateTexture(fName.."BackdropClassIcon", "BACKGROUND")
+	widgets.class_icon.widgetName = "class_icon"
+	widgets.class_icon.parentWindow = f
+	widgets.Backdrop.tl = widgets.Backdrop:CreateTexture(fName.."Backdrop_TL", "BORDER")
+	widgets.Backdrop.tr = widgets.Backdrop:CreateTexture(fName.."Backdrop_TR", "BORDER")
+	widgets.Backdrop.bl = widgets.Backdrop:CreateTexture(fName.."Backdrop_BL", "BORDER")
+	widgets.Backdrop.br = widgets.Backdrop:CreateTexture(fName.."Backdrop_BR", "BORDER")
+	widgets.Backdrop.t  = widgets.Backdrop:CreateTexture(fName.."Backdrop_T" , "BORDER")
+	widgets.Backdrop.b  = widgets.Backdrop:CreateTexture(fName.."Backdrop_B" , "BORDER")
+	widgets.Backdrop.l  = widgets.Backdrop:CreateTexture(fName.."Backdrop_L" , "BORDER")
+	widgets.Backdrop.r  = widgets.Backdrop:CreateTexture(fName.."Backdrop_R" , "BORDER")
+	widgets.Backdrop.bg = widgets.Backdrop:CreateTexture(fName.."Backdrop_BG", "BORDER")
+	widgets.from = widgets.Backdrop:CreateFontString(fName.."BackdropFrom", "OVERLAY", "GameFontNormalLarge")
+	widgets.from.widgetName = "from"
+	widgets.char_info = widgets.Backdrop:CreateFontString(fName.."BackdropCharacterDetails", "OVERLAY", "GameFontNormal")
+	widgets.char_info.widgetName = "char_info"
 
 	-- create core window objects
-	widgets.close = CreateFrame("Button", fName.."ExitButton", f);
-	widgets.close:RegisterForClicks("LeftButtonUp", "RightButtonUp");
-	widgets.close.curTextureIndex = 1;
-	widgets.close.parentWindow = f;
-	widgets.close.widgetName = "close";
+	widgets.close = CreateFrame("Button", fName.."ExitButton", f)
+	widgets.close:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+	widgets.close.curTextureIndex = 1
+	widgets.close.parentWindow = f
+	widgets.close.widgetName = "close"
 
-	widgets.scroll_up = CreateFrame("Button", fName.."ScrollUp", f);
-	widgets.scroll_up:RegisterForClicks("LeftButtonUp", "RightButtonUp");
-	widgets.scroll_up.widgetName = "scroll_up";
+	widgets.scroll_up = CreateFrame("Button", fName.."ScrollUp", f)
+	widgets.scroll_up:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+	widgets.scroll_up.widgetName = "scroll_up"
 
-	widgets.scroll_down = CreateFrame("Button", fName.."ScrollDown", f);
-	widgets.scroll_down:RegisterForClicks("LeftButtonUp", "RightButtonUp");
-	widgets.scroll_down.widgetName = "scroll_down";
+	widgets.scroll_down = CreateFrame('Button', fName .. 'ScrollDown', f)
+	widgets.scroll_down:RegisterForClicks('LeftButtonUp', 'RightButtonUp')
+	widgets.scroll_down.widgetName = 'scroll_down'
 
-	widgets.chat_display = CreateFrame("ScrollingMessageFrame", fName.."ScrollingMessageFrame", f);
-	-- widgets.chat_display:RegisterForDrag("LeftButton");
-	widgets.chat_display:SetHyperlinksEnabled(true)
-	widgets.chat_display:SetFading(false);
-	widgets.chat_display:SetMaxLines(128);
-	widgets.chat_display:SetMovable(true);
+	widgets.chat_display = CreateFrame('ScrollingMessageFrame', fName .. 'ScrollingMessageFrame', f)
+	-- widgets.chat_display:RegisterForDrag("LeftButton")
+--	widgets.chat_display:SetHyperlinksEnabled(true) TODO
+	widgets.chat_display:SetFading(false)
+	widgets.chat_display:SetMaxLines(128)
+	widgets.chat_display:SetMovable(true)
 	-- widgets.chat_display:SetScript("OnDragStart", function(self) MessageWindow_MovementControler_OnDragStart(self); end);
 	-- widgets.chat_display:SetScript("OnDragStop", function(self) MessageWindow_MovementControler_OnDragStop(self); end);
-	widgets.chat_display:SetJustifyH("LEFT");
-	widgets.chat_display:EnableMouse(true);
-	widgets.chat_display:EnableMouseWheel(1);
+	widgets.chat_display:SetJustifyH("LEFT")
+	widgets.chat_display:EnableMouse(true)
+	widgets.chat_display:EnableMouseWheel(1)
 	widgets.chat_display.widgetName = 'chat_display'
 
-	widgets.msg_box = CreateFrame('EditBox', fName .. 'MsgBox', f);
+	widgets.msg_box = CreateFrame('EditBox', fName .. 'MsgBox', f)
 	widgets.msg_box:SetAutoFocus(false);
 	widgets.msg_box:SetHistoryLines(32);
 	-- widgets.msg_box:SetMaxLetters(255);
@@ -714,80 +771,45 @@ function WIM_create_window(user)
 	end
 
 	f.AddEventMessage = function(self, r, g, b, event, ...)
-		nextColor.r, nextColor.g, nextColor.b = r, g, b;
+		nextColor.r, nextColor.g, nextColor.b = r, g, b
 		local str = applyMessageFormatting(self.widgets.chat_display, event, unpack(arg))
-		self:AddMessage(str, r, g, b);
+		self:AddMessage(str, r, g, b)
 		self.msgWaiting = true;
-		self.lastActivity = _G.GetTime();
-		if(self.tabStrip) then
-			self.tabStrip:UpdateTabs();
+		self.lastActivity = _G.GetTime()
+		if self.tabStrip then
+			self.tabStrip:UpdateTabs()
 		end
 	end
 
 	f.UpdateIcon = function(self)
-		local icon = self.widgets.class_icon;
-		if(self.type == "chat" and self.chatType) then
-			icon:SetTexture(skin.message_window.widgets.class_icon.chatAlphaMask);
-			local chat_type = self.chatType == 'battleground' and 'INSTANCE_CHAT' or string.upper(self.chatType);
+		local icon = self.widgets.class_icon
+		if self.type == "chat" and self.chatType then
+			icon:SetTexture(skin.message_window.widgets.class_icon.chatAlphaMask)
+			local chat_type = self.chatType == 'battleground' and 'INSTANCE_CHAT' or string.upper(self.chatType)
 			local color = _G.ChatTypeInfo[chat_type]; -- Drii: ticket 344
-			icon:SetTexCoord(0,1,0,1);
+			icon:SetTexCoord(0,1,0,1)
 			icon:SetGradient('VERTICAL', color.r, color.g, color.b, color.r, color.g, color.b)
 			if skin.message_window.widgets.from.use_class_color then
 				self.widgets.from:SetTextColor(color.r, color.g, color.b)
 			end
 		else
-			local classTag = f.class
 			icon:SetGradient('VERTICAL', 1, 1, 1, 1, 1, 1)
-			if self.bn and self.bn.client == _G.BNET_CLIENT_SC2 then
-				classTag = 'sc2';--"Interface\\FriendsFrame\\Battlenet-Sc2icon"
-				icon:SetTexture(skin.message_window.widgets.client_icon.texture)
-				icon:SetTexCoord(unpack(skin.message_window.widgets.client_icon[classTag]))
-			elseif self.bn and self.bn.client == _G.BNET_CLIENT_D3 then
-				classTag = 'd3';--"Interface\\FriendsFrame\\Battlenet-D3icon"
-				icon:SetTexture(skin.message_window.widgets.client_icon.texture)
-				icon:SetTexCoord(unpack(skin.message_window.widgets.client_icon[classTag]))
-				--(Out of room in class textures file. maybe it's time to skin only class icons and use blizzard provided textures for game clients)
-			elseif self.bn and self.bn.client == _G.BNET_CLIENT_WTCG then
-				classTag = 'hs';--"Interface\\FriendsFrame\\Battlenet-WTCGicon"
-				icon:SetTexture(skin.message_window.widgets.client_icon.texture)
-				icon:SetTexCoord(unpack(skin.message_window.widgets.client_icon[classTag]))
-			elseif self.bn and self.bn.client == _G.BNET_CLIENT_HEROES then
-				classTag = 'hots';--"Interface\\FriendsFrame\\Battlenet-HotSicon"
-				icon:SetTexture(skin.message_window.widgets.client_icon.texture)
-				icon:SetTexCoord(unpack(skin.message_window.widgets.client_icon[classTag]))
-			elseif self.bn and self.bn.client == _G.BNET_CLIENT_OVERWATCH then
-				classTag = 'ow';--"Interface\\FriendsFrame\\Battlenet-Overwatchicon"
-				icon:SetTexture(skin.message_window.widgets.client_icon.texture)
-				icon:SetTexCoord(unpack(skin.message_window.widgets.client_icon[classTag]))
-			elseif self.bn and (self.bn.client == _G.BNET_CLIENT_APP or self.bn.client == _G.BNET_CLIENT_CLNT) then--Battle.net Desktop App
-			classTag = 'bnd';--"Interface\\FriendsFrame\\Battlenet-Battleneticon"
-			icon:SetTexture(skin.message_window.widgets.client_icon.texture)
-			icon:SetTexCoord(unpack(skin.message_window.widgets.client_icon[classTag]))
-			elseif self.class == '' then
-				classTag = 'blank'
+			if self.class == '' then
 				icon:SetTexture(skin.message_window.widgets.class_icon.texture)
-				icon:SetTexCoord(unpack(skin.message_window.widgets.class_icon[classTag]))
+				icon:SetTexCoord(unpack(skin.message_window.widgets.class_icon.blank))
 			else
-				if constants.classes[self.class] then
-					classTag = string.lower(constants.classes[self.class].tag)
-					classTag = string.gsub(classTag, "f$", '')
-				else
-					classTag = 'blank'
-				end
-				icon:SetTexture(skin.message_window.widgets.class_icon.texture);
-				icon:SetTexCoord(unpack(skin.message_window.widgets.class_icon[classTag]));
+				icon:SetTexture(skin.message_window.widgets.class_icon.texture)
+				icon:SetTexCoord(unpack(skin.message_window.widgets.class_icon[self.class]))
 			end
-			if constants.classes[self.class] then
-				self.classColor = constants.classes[self.class].color;
-				if(skin.message_window.widgets.from.use_class_color) then
-					self.widgets.from:SetTextColor(RGBHexToPercent(constants.classes[self.class].color));
-				end
+			if skin.message_window.widgets.from.use_class_color then
+				local color = RAID_CLASS_COLORS[self.class]
+				self.widgets.from:SetTextColor(color.r, color.g, color.b)
 			end
 		end
 	end
 
 	f.UpdateCharDetails = function(self)
-		self.widgets.char_info:SetText(skin.message_window.widgets.char_info.format(self, self.guild, self.level, self.race, self.class));
+		self.widgets.char_info:SetText(skin.message_window.widgets.char_info.format(self, self.guild, self.level, self.race, self.class))
 	end
 
 	f.WhoCallback = function(result)
@@ -797,7 +819,7 @@ function WIM_create_window(user)
 			f.race = result.Race;
 			f.guild = result.Guild;
 			f.location = result.Zone;
-			f:UpdateIcon();
+--			f:UpdateIcon();
 			f:UpdateCharDetails();
 		end
 	end
@@ -816,42 +838,8 @@ function WIM_create_window(user)
 				Race = "",
 				Zone = L["Unknown"],
 			}
-		elseif(self.isBN) then
-			-- get information of BN user from friends data.
-			local id = self.theUser and BNet_GetBNetIDAccount(self.theUser) or nil;
-			if(id) then
-				local _, _, _, _, _, toonID = _G.BNGetFriendInfoByID(id)
-				local hasFocus, toonName, client, realmName, realmID, faction, race, class, guild, zoneName, level, gameText, broadcastText, broadcastTime = BNGetGameAccountInfo(toonID or 0);
-				self.class = class or "";
-				self.level = level or "";
-				self.race = race or "";
-				self.guild = guild or "";
-				self.location = client == _G.BNET_CLIENT_WOW and zoneName or gameText;
-				self.bn.class = class;
-				self.bn.level = level;
-				self.bn.race = race;
-				self.bn.guild = guild;
-				self.bn.location = client == _G.BNET_CLIENT_WOW and zoneName or gameText;
-				self.bn.gameText = gameText;
-				self.bn.toonName = toonName;
-				self.bn.client = client;
-				self.bn.realmName = realmName;
-				self.bn.faction = faction;
-				self.bn.broadcastText = broadcastText;
-				self.bn.broadcastTime = broadcastTime;
-				self.bn.hasFocus = hasFocus;
-				self.bn.id = id;
-				-- self.widgets.from:SetText(self.theUser.." - "..toonName);
-				self:UpdateIcon();
-				if (client == _G.BNET_CLIENT_WOW) then
-					self:UpdateCharDetails();
-				end
-			else
-				self:AddMessage(_G.BN_UNABLE_TO_RESOLVE_NAME, db.displayColors.errorMsg.r, db.displayColors.errorMsg.g, db.displayColors.errorMsg.b);
-			end
 		else
-			local whoLib = libs.WhoLib;
-			if(whoLib) then
+			if whoLib then
 				local result = whoLib:UserInfo(self.theUser,
 					{
 						queue = whoLib.WHOLIB_QUEUE_QUIET,
@@ -890,7 +878,7 @@ function WIM_create_window(user)
 	local rules = self:GetRuleSet(); -- defaults incase unknown
 
 	-- pass isNew to pop ruleset.
-	if(forceResult == true) then
+	if forceResult == true then
 		-- go by forceResult and ignore rules
 		if(self.tabStrip) then
 			-- if(not EditBoxInFocus) then
@@ -904,18 +892,13 @@ function WIM_create_window(user)
 			ShowContainer();
 			self:ResetAnimation();
 			self:Show();
-			if((not getVisibleChatFrameEditBox() and not EditBoxInFocus and rules.autofocus) or forceFocus) then
+			if (not getVisibleChatFrameEditBox() and not EditBoxInFocus and rules.autofocus) or forceFocus then
 				self.widgets.msg_box:SetFocus();
 			end
 			local count = 0;
-			for i = 1, getn(WindowSoupBowl.windows) do
-				count = WindowSoupBowl.windows[i].obj:IsShown() and count + 1 or count;
+			for _, window in WIM_Windows do
+				count = window.obj:IsShown() and count + 1 or count
 			end
-			--[[				if(count > 1) then
-								DisplayTutorial(L["Creating Tab Groups"], L["You can group two or many windows together by <Shift-Clicking> a window and dragging it on top of another."]);
-							else
-								DisplayTutorial(L["Resizing Windows"], L["You can resize a window by holding <Shift> and dragging the bottom right corner of the window."]);
-							end-- ]]
 		end
 	else
 		-- execute pop rules.
@@ -948,10 +931,10 @@ function WIM_create_window(user)
 		self:SetScale(db.winSize.scale/100);
 		self.widgets.Backdrop:SetAlpha(db.windowAlpha/100);
 		local Path,_,Flags = self.widgets.chat_display:GetFont();
-		self:SetClampedToScreen(not WindowParent.animUp and db.clampToScreen);
+		self:SetClampedToScreen(true)
 		self.widgets.chat_display:SetFont(Path or _G["ChatFontNormal"]:GetFont(),db.fontSize+2,Flags);
 		self.widgets.chat_display:SetAlpha(1);
-		self.widgets.chat_display:SetIndentedWordWrap(db.wordwrap_indent);
+--		self.widgets.chat_display:SetIndentedWordWrap(db.wordwrap_indent); -- TODO
 		self.widgets.msg_box:SetAlpha(1);
 		self.widgets.msg_box:SetAltArrowKeyMode(db.ignoreArrowKeys);
 
@@ -1006,7 +989,7 @@ function WIM_create_window(user)
 				self:Hide_Normal();
 				self:ResetAnimation();
 			else
-				self.widgets.chat_display:SetParent("UIParent");
+				self.widgets.chat_display:SetParent(UIParent)
 				self.widgets.chat_display:Hide();
 				local a = self.animation;
 				f:SetClampedToScreen(false);
@@ -1053,8 +1036,67 @@ function WIM_create_window(user)
 		w.parentWindow = f;
 	end
 
-	loadRegisteredWidgets(f);
-	loadHandlers(f);
+--	loadRegisteredWidgets(f);
+--	loadHandlers(f);
 
 	return f
+end
+
+function WIM_LoadWindowDefaults(f)
+	f:Hide()
+	f.age = _G.GetTime()
+	f.hasMoved = false
+
+	f.lastActivity = _G.GetTime()
+
+	f.customSize = false
+
+	f.guild = ""
+	f.level = ""
+	f.race = ""
+	f.class = ""
+	f.location = ""
+	f.demoSave = nil
+	f.classColor = "ffffff"
+
+--	f.isGM = lists.gm[f.theUser]
+
+--	f:UpdateIcon()
+	f.isNew = true
+
+	f:SetScale(1)
+	f:SetAlpha(1)
+
+	f.widgets.Backdrop:SetAlpha(1)
+
+	f.widgets.from:SetText(f.theUser)
+	f.widgets.from:SetTextColor(RGBHexToPercent(skin.message_window.widgets.from.font_color))
+
+	f.widgets.char_info:SetText("")
+
+	f.widgets.msg_box.setText = 0
+	f.widgets.msg_box:SetText("")
+	f.widgets.msg_box:Show()
+
+	f.widgets.chat_display:Clear()
+	f.widgets.chat_display:AddMessage("  ")
+	f.widgets.chat_display:AddMessage("  ")
+--	updateScrollBars(f);
+
+	f.widgets.close.forceShift = false
+
+	-- load Registered Widgets (if not created already) & set defaults
+--	loadRegisteredWidgets(f)
+--	loadHandlers(f)
+
+	-- process registered widgets
+	local widgetName, widgetObj
+	for widgetName, widgetObj in pairs(f.widgets) do
+		if type(widgetObj.SetDefaults) == "function" then
+			widgetObj:SetDefaults()
+		end
+	end
+	WIM_ApplySkinToWindow(f)
+--	f:UpdateProps()
+--	placeWindow(f)
 end

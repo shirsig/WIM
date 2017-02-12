@@ -437,6 +437,7 @@ function WIM_PostMessage(user, msg, ttype, from, raw_msg, hotkeyFix)
 	local isNew = false
 	if not WIM_Windows[user] then
 		f = getglobal('WIM_msgFrame' .. user) or WIM_create_window(user)
+		WIM_LoadWindowDefaults(f)
 		WIM_SetWindowProps(f)
 		WIM_Windows[user] = {
 			frame = 'WIM_msgFrame'..user,
@@ -633,30 +634,29 @@ end
 
 
 function WIM_SetWindowProps(theWin)
-	if(WIM_Data.showShortcutBar) then
-		getglobal(theWin:GetName().."ShortcutFrame"):Show();
-		local tHeight = WIM_Data.winSize.height;
-		if(tHeight < 240) then
-			tHeight = 240;
-		end
-		theWin:SetHeight(tHeight);
-	else
-		getglobal(theWin:GetName().."ShortcutFrame"):Hide();
-		theWin:SetHeight(WIM_Data.winSize.height);
-	end
-	theWin:SetWidth(WIM_Data.winSize.width);
-	theWin:SetScale(WIM_Data.windowSize);
-	theWin:SetAlpha(WIM_Data.windowAlpha);
-	getglobal(theWin:GetName().."ScrollingMessageFrame"):SetFont("Fonts\\FRIZQT__.TTF",WIM_Data.fontSize);
-	getglobal(theWin:GetName().."ScrollingMessageFrame"):SetAlpha(1);
-	getglobal(theWin:GetName().."MsgBox"):SetAlpha(1);
-	getglobal(theWin:GetName().."ShortcutFrame"):SetAlpha(1);
-	if(WIM_Data.useEscape) then
-		WIM_AddEscapeWindow(theWin);
-	else
-		WIM_RemoveEscapeWindow(theWin);
-	end
-	--WIM_SetTabFrameProps();
+--	if WIM_Data.showShortcutBar then
+--		getglobal(theWin:GetName().."ShortcutFrame"):Show();
+--		local tHeight = WIM_Data.winSize.height;
+--		if(tHeight < 240) then
+--			tHeight = 240;
+--		end
+--		theWin:SetHeight(tHeight);
+--	else
+--		getglobal(theWin:GetName().."ShortcutFrame"):Hide();
+--		theWin:SetHeight(WIM_Data.winSize.height);
+--	end
+--	theWin:SetWidth(WIM_Data.winSize.width);
+--	theWin:SetScale(WIM_Data.windowSize);
+--	theWin:SetAlpha(WIM_Data.windowAlpha);
+--	getglobal(theWin:GetName().."ScrollingMessageFrame"):SetFont("Fonts\\FRIZQT__.TTF",WIM_Data.fontSize);
+--	getglobal(theWin:GetName().."ScrollingMessageFrame"):SetAlpha(1);
+--	getglobal(theWin:GetName().."MsgBox"):SetAlpha(1);
+--	getglobal(theWin:GetName().."ShortcutFrame"):SetAlpha(1);
+--	if(WIM_Data.useEscape) then
+--		WIM_AddEscapeWindow(theWin);
+--	else
+--		WIM_RemoveEscapeWindow(theWin);
+--	end
 end
 
 
