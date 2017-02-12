@@ -619,14 +619,14 @@ function WIM_create_window(user)
 	local fName = 'WIM_msgFrame' .. user
 	local f = CreateFrame('Frame', fName, UIParent)
 	-- set frame's initial properties
-	f:SetClampedToScreen(not WindowParent.animUp and db.clampToScreen);
-	f:SetFrameStrata("DIALOG");
-	f:SetMovable(true);
-	f:SetToplevel(true);
-	f:SetWidth(384);
-	f:SetHeight(256);
-	f:EnableMouse(true);
-	f:SetPoint("TOPLEFT", WindowParent, "BOTTOMLEFT", 25, WindowParent:GetTop()-125);
+	f:SetClampedToScreen(true)
+	f:SetFrameStrata("DIALOG")
+	f:SetMovable(true)
+	f:SetToplevel(true)
+	f:SetWidth(384)
+	f:SetHeight(256)
+	f:EnableMouse(true)
+--	f:SetPoint("TOPLEFT", WindowParent, "BOTTOMLEFT", 25, WindowParent:GetTop()-125)
 	f:RegisterForDrag("LeftButton");
 	f:SetScript("OnDragStart", MessageWindow_MovementControler_OnDragStart);
 	f:SetScript("OnDragStop", MessageWindow_MovementControler_OnDragStop);
@@ -691,31 +691,31 @@ function WIM_create_window(user)
 	widgets.chat_display:SetJustifyH("LEFT");
 	widgets.chat_display:EnableMouse(true);
 	widgets.chat_display:EnableMouseWheel(1);
-	widgets.chat_display.widgetName = "chat_display";
+	widgets.chat_display.widgetName = 'chat_display'
 
-	widgets.msg_box = CreateFrame("EditBox", fName.."MsgBox", f);
+	widgets.msg_box = CreateFrame('EditBox', fName .. 'MsgBox', f);
 	widgets.msg_box:SetAutoFocus(false);
 	widgets.msg_box:SetHistoryLines(32);
 	-- widgets.msg_box:SetMaxLetters(255);
 	widgets.msg_box:SetAltArrowKeyMode(true);
 	widgets.msg_box:EnableMouse(true);
-	widgets.msg_box.widgetName = "msg_box";
+	widgets.msg_box.widgetName = 'msg_box'
 
 	-- Addmessage functions
 	f.AddMessage = function(self, msg, ...)
-		msg = applyStringModifiers(msg, self.widgets.chat_display);
-		self.widgets.chat_display:AddMessage(msg, unpack(arg));
+		msg = applyStringModifiers(msg, self.widgets.chat_display)
+		self.widgets.chat_display:AddMessage(msg, unpack(arg))
 		updateScrollBars(self);
-		CallModuleFunction("OnWindowMessageAdded", self, msg, unpack(arg));
+		CallModuleFunction('OnWindowMessageAdded', self, msg, unpack(arg))
 	end
 
 	f.AddMessageRaw = function(self, msg, ...)
-		self.widgets.chat_display:AddMessage(msg, unpack(arg));
+		self.widgets.chat_display:AddMessage(msg, unpack(arg))
 	end
 
 	f.AddEventMessage = function(self, r, g, b, event, ...)
 		nextColor.r, nextColor.g, nextColor.b = r, g, b;
-		local str = applyMessageFormatting(self.widgets.chat_display, event, unpack(arg));
+		local str = applyMessageFormatting(self.widgets.chat_display, event, unpack(arg))
 		self:AddMessage(str, r, g, b);
 		self.msgWaiting = true;
 		self.lastActivity = _G.GetTime();
@@ -728,56 +728,56 @@ function WIM_create_window(user)
 		local icon = self.widgets.class_icon;
 		if(self.type == "chat" and self.chatType) then
 			icon:SetTexture(skin.message_window.widgets.class_icon.chatAlphaMask);
-			local chat_type = self.chatType == "battleground" and "INSTANCE_CHAT" or string.upper(self.chatType);
+			local chat_type = self.chatType == 'battleground' and 'INSTANCE_CHAT' or string.upper(self.chatType);
 			local color = _G.ChatTypeInfo[chat_type]; -- Drii: ticket 344
 			icon:SetTexCoord(0,1,0,1);
-			icon:SetGradient("VERTICAL", color.r, color.g, color.b, color.r, color.g, color.b);
-			if(skin.message_window.widgets.from.use_class_color) then
-				self.widgets.from:SetTextColor(color.r, color.g, color.b);
+			icon:SetGradient('VERTICAL', color.r, color.g, color.b, color.r, color.g, color.b)
+			if skin.message_window.widgets.from.use_class_color then
+				self.widgets.from:SetTextColor(color.r, color.g, color.b)
 			end
 		else
-			local classTag = f.class;
-			icon:SetGradient("VERTICAL", 1, 1, 1, 1, 1, 1);
-			if(self.bn and self.bn.client == _G.BNET_CLIENT_SC2) then
-				classTag = "sc2";--"Interface\\FriendsFrame\\Battlenet-Sc2icon"
-				icon:SetTexture(skin.message_window.widgets.client_icon.texture);
-				icon:SetTexCoord(unpack(skin.message_window.widgets.client_icon[classTag]));
-			elseif(self.bn and self.bn.client == _G.BNET_CLIENT_D3) then
-				classTag = "d3";--"Interface\\FriendsFrame\\Battlenet-D3icon"
-				icon:SetTexture(skin.message_window.widgets.client_icon.texture);
-				icon:SetTexCoord(unpack(skin.message_window.widgets.client_icon[classTag]));
+			local classTag = f.class
+			icon:SetGradient('VERTICAL', 1, 1, 1, 1, 1, 1)
+			if self.bn and self.bn.client == _G.BNET_CLIENT_SC2 then
+				classTag = 'sc2';--"Interface\\FriendsFrame\\Battlenet-Sc2icon"
+				icon:SetTexture(skin.message_window.widgets.client_icon.texture)
+				icon:SetTexCoord(unpack(skin.message_window.widgets.client_icon[classTag]))
+			elseif self.bn and self.bn.client == _G.BNET_CLIENT_D3 then
+				classTag = 'd3';--"Interface\\FriendsFrame\\Battlenet-D3icon"
+				icon:SetTexture(skin.message_window.widgets.client_icon.texture)
+				icon:SetTexCoord(unpack(skin.message_window.widgets.client_icon[classTag]))
 				--(Out of room in class textures file. maybe it's time to skin only class icons and use blizzard provided textures for game clients)
-			elseif(self.bn and self.bn.client == _G.BNET_CLIENT_WTCG) then
-				classTag = "hs";--"Interface\\FriendsFrame\\Battlenet-WTCGicon"
-				icon:SetTexture(skin.message_window.widgets.client_icon.texture);
-				icon:SetTexCoord(unpack(skin.message_window.widgets.client_icon[classTag]));
-			elseif(self.bn and self.bn.client == _G.BNET_CLIENT_HEROES) then
-				classTag = "hots";--"Interface\\FriendsFrame\\Battlenet-HotSicon"
-				icon:SetTexture(skin.message_window.widgets.client_icon.texture);
-				icon:SetTexCoord(unpack(skin.message_window.widgets.client_icon[classTag]));
-			elseif(self.bn and self.bn.client == _G.BNET_CLIENT_OVERWATCH) then
-				classTag = "ow";--"Interface\\FriendsFrame\\Battlenet-Overwatchicon"
-				icon:SetTexture(skin.message_window.widgets.client_icon.texture);
-				icon:SetTexCoord(unpack(skin.message_window.widgets.client_icon[classTag]));
-			elseif(self.bn and (self.bn.client == _G.BNET_CLIENT_APP or self.bn.client == _G.BNET_CLIENT_CLNT)) then--Battle.net Desktop App
-			classTag = "bnd";--"Interface\\FriendsFrame\\Battlenet-Battleneticon"
-			icon:SetTexture(skin.message_window.widgets.client_icon.texture);
-			icon:SetTexCoord(unpack(skin.message_window.widgets.client_icon[classTag]));
-			elseif(self.class == "") then
-				classTag = "blank"
-				icon:SetTexture(skin.message_window.widgets.class_icon.texture);
-				icon:SetTexCoord(unpack(skin.message_window.widgets.class_icon[classTag]));
+			elseif self.bn and self.bn.client == _G.BNET_CLIENT_WTCG then
+				classTag = 'hs';--"Interface\\FriendsFrame\\Battlenet-WTCGicon"
+				icon:SetTexture(skin.message_window.widgets.client_icon.texture)
+				icon:SetTexCoord(unpack(skin.message_window.widgets.client_icon[classTag]))
+			elseif self.bn and self.bn.client == _G.BNET_CLIENT_HEROES then
+				classTag = 'hots';--"Interface\\FriendsFrame\\Battlenet-HotSicon"
+				icon:SetTexture(skin.message_window.widgets.client_icon.texture)
+				icon:SetTexCoord(unpack(skin.message_window.widgets.client_icon[classTag]))
+			elseif self.bn and self.bn.client == _G.BNET_CLIENT_OVERWATCH then
+				classTag = 'ow';--"Interface\\FriendsFrame\\Battlenet-Overwatchicon"
+				icon:SetTexture(skin.message_window.widgets.client_icon.texture)
+				icon:SetTexCoord(unpack(skin.message_window.widgets.client_icon[classTag]))
+			elseif self.bn and (self.bn.client == _G.BNET_CLIENT_APP or self.bn.client == _G.BNET_CLIENT_CLNT) then--Battle.net Desktop App
+			classTag = 'bnd';--"Interface\\FriendsFrame\\Battlenet-Battleneticon"
+			icon:SetTexture(skin.message_window.widgets.client_icon.texture)
+			icon:SetTexCoord(unpack(skin.message_window.widgets.client_icon[classTag]))
+			elseif self.class == '' then
+				classTag = 'blank'
+				icon:SetTexture(skin.message_window.widgets.class_icon.texture)
+				icon:SetTexCoord(unpack(skin.message_window.widgets.class_icon[classTag]))
 			else
-				if(constants.classes[self.class]) then
-					classTag = string.lower(constants.classes[self.class].tag);
-					classTag = string.gsub(classTag, "f$", "");
+				if constants.classes[self.class] then
+					classTag = string.lower(constants.classes[self.class].tag)
+					classTag = string.gsub(classTag, "f$", '')
 				else
-					classTag = "blank";
+					classTag = 'blank'
 				end
 				icon:SetTexture(skin.message_window.widgets.class_icon.texture);
 				icon:SetTexCoord(unpack(skin.message_window.widgets.class_icon[classTag]));
 			end
-			if(constants.classes[self.class]) then
+			if constants.classes[self.class] then
 				self.classColor = constants.classes[self.class].color;
 				if(skin.message_window.widgets.from.use_class_color) then
 					self.widgets.from:SetTextColor(RGBHexToPercent(constants.classes[self.class].color));
@@ -791,7 +791,7 @@ function WIM_create_window(user)
 	end
 
 	f.WhoCallback = function(result)
-		if(result and result.Online and result.Name == f.theUser) then
+		if result and result.Online and result.Name == f.theUser then
 			f.class = result.Class;
 			f.level = result.Level;
 			f.race = result.Race;
@@ -803,19 +803,19 @@ function WIM_create_window(user)
 	end
 
 	f.SendWho = function(self)
-		if(self.type ~= "whisper") then
-			return;
+		if self.type ~= 'whisper' then
+			return
 		end
-		if(self.isGM) then
-			self.WhoCallback({
+		if self.isGM then
+			self.WhoCallback{
 				Name = self.theUser,
 				Online = true,
-				Guild = "Blizzard",
+				Guild = 'Blizzard',
 				Class = L["Game Master"],
 				Level = "",
 				Race = "",
-				Zone = L["Unknown"]
-			});
+				Zone = L["Unknown"],
+			}
 		elseif(self.isBN) then
 			-- get information of BN user from friends data.
 			local id = self.theUser and BNet_GetBNetIDAccount(self.theUser) or nil;
@@ -940,7 +940,7 @@ function WIM_create_window(user)
 
 	-- at this state the message is no longer classified as a new window, reset flag.
 	f.isNew = false;
-	CallModuleFunction("OnWindowPopped", self);
+--	CallModuleFunction("OnWindowPopped", self);
 	end
 
 	f.UpdateProps = function(self)
