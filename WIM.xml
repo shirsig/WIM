@@ -157,28 +157,6 @@
 				<NormalTexture file="Interface\Buttons\UI-Panel-MinimizeButton-Up"/>
 				<PushedTexture file="Interface\Buttons\UI-Panel-MinimizeButton-Down"/>
 				<HighlightTexture alphaMode="ADD" file="Interface\Buttons\UI-Panel-MinimizeButton-Highlight"/>
-				<Scripts>
-					<OnLoad>
-						this:RegisterForClicks("LeftButtonUp", "RightButtonUp");
-					</OnLoad>
-					<OnClick>
-						if(IsShiftKeyDown()) then
-							WIM_CloseConvo(this:GetParent().theUser);
-						else
-							this:GetParent():Hide();
-						end
-					</OnClick>
-					<OnEnter>
-						if(WIM_Data.showToolTips == true) then
-							GameTooltip:SetOwner(this, "ANCHOR_LEFT");
-							GameTooltip:SetText("Shift &amp; Left-Click to end conversation.");
-							GameTooltip:SetPoint("BOTTOMRIGHT", this, "TOPRIGHT", 0, 0);
-						end
-					</OnEnter>
-					<OnLeave>
-						GameTooltip:Hide();
-					</OnLeave>
-				</Scripts>
 			</Button>
 			<Button name="$parentHistoryButton" hidden="true">
 				<Size>

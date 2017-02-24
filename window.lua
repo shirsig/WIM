@@ -816,7 +816,6 @@ function WIM_create_window(user)
 		WIM_WindowOnShow()
 	end)
 	f:SetScript('OnHide', function()
-		getglobal(this:GetName() .. 'IgnoreConfirm'):Hide()
 		local user = this.theUser
 		WIM_Windows[user].is_visible = false
 		WIM_Windows[user].newMSG = false
@@ -858,6 +857,44 @@ function WIM_create_window(user)
 	widgets.close.curTextureIndex = 1
 	widgets.close.parentWindow = f
 	widgets.close.widgetName = "close"
+	widgets.close:SetScript('OnEnter', function()
+		if WIM_Data.showToolTips then
+			GameTooltip:SetOwner(this, 'ANCHOR_TOPRIGHT')
+			GameTooltip:SetText'<Shift-Click> to close window.'
+		end
+	end)
+	widgets.close:SetScript('OnLeave', function()
+		GameTooltip:Hide()
+	end)
+	widgets.close:SetScript('OnClick', function()
+		if IsShiftKeyDown() then
+			WIM_CloseConvo(this:GetParent().theUser)
+		else
+			this:GetParent():Hide()
+		end
+	end)
+
+--	RegisterWidgetTrigger("close", "whisper,chat,w2w", "OnUpdate", function(self)
+--		local SelectedSkin = WIM:GetSelectedSkin();
+--		if(GetMouseFocus() == self) then
+--			if(IsShiftKeyDown() and self.curTextureIndex == 1) then
+--				self:SetNormalTexture(SelectedSkin.message_window.widgets.close.state_close.NormalTexture);
+--				self:SetPushedTexture(SelectedSkin.message_window.widgets.close.state_close.PushedTexture);
+--				self:SetHighlightTexture(SelectedSkin.message_window.widgets.close.state_close.HighlightTexture, SelectedSkin.message_window.widgets.close.state_close.HighlightAlphaMode);
+--				self.curTextureIndex = 2;
+--			elseif(not IsShiftKeyDown() and self.curTextureIndex == 2) then
+--				self:SetNormalTexture(SelectedSkin.message_window.widgets.close.state_hide.NormalTexture);
+--				self:SetPushedTexture(SelectedSkin.message_window.widgets.close.state_hide.PushedTexture);
+--				self:SetHighlightTexture(SelectedSkin.message_window.widgets.close.state_hide.HighlightTexture, SelectedSkin.message_window.widgets.close.state_hide.HighlightAlphaMode);
+--				self.curTextureIndex = 1;
+--			end
+--		elseif(self.curTextureIndex == 2) then
+--			self:SetNormalTexture(SelectedSkin.message_window.widgets.close.state_hide.NormalTexture);
+--			self:SetPushedTexture(SelectedSkin.message_window.widgets.close.state_hide.PushedTexture);
+--			self:SetHighlightTexture(SelectedSkin.message_window.widgets.close.state_hide.HighlightTexture, SelectedSkin.message_window.widgets.close.state_hide.HighlightAlphaMode);
+--			self.curTextureIndex = 1;
+--		end
+--	end);
 
 	widgets.scroll_up = CreateFrame("Button", fName .. "ScrollUp", f)
 	widgets.scroll_up:RegisterForClicks("LeftButtonUp", "RightButtonUp")
