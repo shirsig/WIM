@@ -3,10 +3,10 @@ local _G = getfenv(0)
 local ShortcutCount = 5
 
 local function formatDetails(window, guild, level, race, class)
-	if(guild ~= "") then
-		guild = "<"..guild.."> ";
+	if guild ~= '' then
+		guild = '<' .. guild .. '> '
 	end
-	return "|cffffffff"..guild..level.." "..race.." "..class.."|r";
+	return '|cffffffff' .. guild .. level .. ' ' .. race .. ' ' .. class .. '|r'
 end
 
 local skin = {
@@ -256,7 +256,7 @@ local skin = {
 				PushedTexture = "Interface\\MoneyFrame\\Arrow-Right-Down",
 				DisabledTexture = "Interface\\MoneyFrame\\Arrow-Right-Disabled",
 				HighlightTexture = [[Interface\AddOns\WIM\textures\TabArrowRight]],
-				HighlightAlphaMode = "ADD",
+				HighlightAlphaMode = 'ADD',
 				height = 20,
 				width = 20,
 			},
@@ -267,10 +267,10 @@ local skin = {
 			{"BOTTOMRIGHT", "window", "TOPRIGHT", -20, -4}
 		},
 		text = {
-			font = "ChatFontNormal",
+			font = 'ChatFontNormal',
 			font_color = {1, 1, 1},
 			font_height = 12,
-			font_flags = ""
+			font_flags = '',
 		},
 		vertical = false,
 	},
@@ -404,74 +404,185 @@ local skin = {
 
 local db = {
 	skin = {
-		selected = "WIM Classic",
-		font = "ChatFontNormal",
-		font_outline = "",
+		selected = 'WIM Classic',
+		font = 'ChatFontNormal',
+		font_outline = '',
 		suggest = true,
 	},
 }
 
 db.displayColors = {
 	sysMsg = {
-		r=1,
-		g=0.6627450980392157,
-		b=0
+		r = 1,
+		g = 0.6627450980392157,
+		b = 0,
 	},
 	errorMsg = {
-		r=1,
-		g=0,
-		b=0
+		r = 1,
+		g = 0,
+		b = 0,
 	},
 	useSkin = true,
-};
-db.fontSize = 12;
-db.windowAlpha = 80;
-db.windowOnTop = true;
-db.keepFocus = true;
-db.keepFocusRested = true;
-db.autoFocus = false;
+}
+db.fontSize = 12
+db.windowAlpha = 80
+db.windowOnTop = true
+db.keepFocus = true
+db.keepFocusRested = true
+db.autoFocus = false
 db.winSize = {
 	width = 333,
 	height = 220,
 	scale = 100,
-	strata = "DIALOG"
-};
+	strata = 'DIALOG',
+}
 db.winLoc = {
-	left =217,
-	top =664
-};
+	left = 217,
+	top = 664,
+}
 db.winCascade = {
 	enabled = true,
 	direction = 8
-};
-db.winFade = true;
-db.winAnimation = true;
-db.wordwrap_indent = false;
-db.coloredNames = true;
-db.escapeToHide = true;
-db.ignoreArrowKeys = true;
-db.pop_rules = {};
-db.whoLookups = true;
-db.hoverLinks = false;
-db.tabAdvance = false;
-db.clampToScreen = true;
+}
+db.winFade = true
+db.winAnimation = true
+db.wordwrap_indent = false
+db.coloredNames = true
+db.escapeToHide = true
+db.ignoreArrowKeys = true
+db.pop_rules = {}
+db.whoLookups = true
+db.hoverLinks = false
+db.tabAdvance = false
+db.clampToScreen = true
 
 db.formatting = {
 	bracketing = {
 		enabled = true,
 		type = 1,
 	},
-};
+}
+
+local buttons = {
+	{
+		id = 'location',
+		title = 'Player Location',
+		click = function(self, button)
+			_G.CloseDropDownMenus()
+			if button == 'LeftButton' then
+				self.parentWindow:SendWho()
+			else
+				WIM.MENU_ARMORY_USER = self.parentWindow.theUser
+				WIM.MENU_ARMORY_REALM = env.realm
+				if(self.parentWindow.isBN) then
+					WIM.MENU_ARMORY_USER = self.parentWindow.bn.toonName
+					WIM.MENU_ARMORY_REALM = self.parentWindow.bn.realmName
+				end
+				PopContextMenu('MENU_ARMORY', self:GetName())
+			end
+		end,
+		enter = function(self)
+			local location = self.parentWindow.location ~= '' and self.parentWindow.location or 'Unknown'
+			local tbl = self.parentWindow.w2w
+			if not tbl or not tbl.services then
+				GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
+				GameTooltip:AddLine("|cff"..self.parentWindow.classColor..self.parentWindow.theUser.."|r")
+				if(self.parentWindow.isBN) then
+					local bn = self.parentWindow.bn;
+					if bn.toonName and bn.toonName ~= "" then _G.GameTooltip:AddDoubleLine('Character:', "|cffffffff"..bn.toonName.."|r") end
+				end
+				GameTooltip:AddDoubleLine('Location'..":", "|cffffffff"..location.."|r")
+				GameTooltip:AddLine("|cff69ccf0"..'Click to update...'.."|r")
+				GameTooltip:AddLine("|cff69ccf0"..'Right-Click for profile links...'.."|r")
+				GameTooltip:Show()
+			else
+				--w2w tooltip
+				ShowW2WTip(self.parentWindow, self, "ANCHOR_RIGHT")
+			end
+		end,
+	},
+	{
+		id = 'invite',
+		title = 'Invite to Party',
+		click = function(self)
+			_G.InviteUnit(self.parentWindow.theUser)
+		end,
+		enter = function() end,
+	},
+	{
+		id = 'friend',
+		title = 'Add Friend',
+		click = function(self)
+			_G.AddFriend(self.parentWindow.theUser)
+		end,
+		enter = function() end,
+	},
+	{
+		id = 'ignore',
+		title = 'Ignore User',
+		click = function(self)
+			local win = self.parentWindow
+			StaticPopupDialogs.WIM_IGNORE = {
+				preferredIndex = STATICPOPUP_NUMDIALOGS,
+				text = format('Are you sure you want to\nignore %s?', "|cff69ccf0" .. win.theUser .. "|r"),
+				button1 = 'Yes',
+				button2 = 'No',
+				OnAccept = function()
+					AddIgnore(win.theUser)
+--					win:Hide()
+				end,
+				timeout = 0,
+				whileDead = 1,
+				hideOnEscape = 1,
+			}
+			StaticPopup_Show'WIM_IGNORE'
+		end,
+		enter = function() end,
+	},
+}
+
+local function createButton(parent, i)
+	local button = CreateFrame('Button', '$parentShortcutFrameButton' .. i, parent)
+	button.icon = button:CreateTexture(nil, 'BACKGROUND')
+	button.icon:SetAllPoints()
+	button.Enable = function(self)
+		self:Show()
+		self.isEnabled = true
+--		parent:UpdateButtons()
+	end
+	button.Disable = function(self)
+		self:Hide()
+		self.isEnabled = false
+--		parent:UpdateButtons()
+	end
+	button:SetScript('OnEnter', function(self)
+		if buttons[i].enter then
+			buttons[i].enter(self)
+		else
+			if db.showToolTips then
+				GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
+				GameTooltip:SetText(buttons[i].title)
+			end
+		end
+	end)
+	button:SetScript('OnLeave', function(self)
+		GameTooltip:Hide()
+	end)
+	button:SetScript('OnClick', buttons[i].click)
+
+	button:Enable()
+	return button
+end
 
 local function RGBHexToPercent(rgbStr)
-	local R, G, B = string.sub(rgbStr, 1, 2), string.sub(rgbStr, 3, 4), string.sub(rgbStr, 5, 6);
-	return tonumber(R, 16)/255, tonumber(G, 16)/255, tonumber(B, 16)/255;
+	local R, G, B = strsub(rgbStr, 1, 2), strsub(rgbStr, 3, 4), strsub(rgbStr, 5, 6)
+	return tonumber(R, 16) / 255, tonumber(G, 16) / 255, tonumber(B, 16) / 255
 end
 
 local function setPointsToObj(obj, pointsTable)
 	obj:ClearAllPoints()
 	for i = 1, getn(pointsTable) do
-		local point, relativeTo, relativePoint, offx, offy = unpack(pointsTable[i]);
+		local point, relativeTo, relativePoint, offx, offy = unpack(pointsTable[i])
 		if relativeTo and type(relativeTo) == 'string' then
 			if string.lower(relativeTo) == 'window' then
 				relativeTo = obj.parentWindow
@@ -491,12 +602,12 @@ function WIM_SetWidgetFont(f, widgetSkinTable)
 			local font, height, flags = _G[widgetSkinTable.font]:GetFont()
 			f:SetFont(font, widgetSkinTable.font_height or height, widgetSkinTable.font_flags or flags)
 		else
-			local font, height, flags = _G["ChatFontNormal"]:GetFont()
-			f:SetFont(font, widgetSkinTable.font_height or 12, widgetSkinTable.font_flags or "")
+			local font, height, flags = _G['ChatFontNormal']:GetFont()
+			f:SetFont(font, widgetSkinTable.font_height or 12, widgetSkinTable.font_flags or '')
 		end
 	end
 	if widgetSkinTable.font_color then
-		if type(widgetSkinTable.font_color) == "table" then
+		if type(widgetSkinTable.font_color) == 'table' then
 			f:SetTextColor(unpack(widgetSkinTable.font_color))
 		else
 			f:SetTextColor(RGBHexToPercent(widgetSkinTable.font_color))
@@ -505,11 +616,11 @@ function WIM_SetWidgetFont(f, widgetSkinTable)
 end
 
 function WIM_SetWidgetRect(f, widgetSkinTable)
-	if type(widgetSkinTable) == "table" then
-		if type(widgetSkinTable.width) == "number" then
+	if type(widgetSkinTable) == 'table' then
+		if type(widgetSkinTable.width) == 'number' then
 			f:SetWidth(widgetSkinTable.width)
 		end
-		if type(widgetSkinTable.height) == "number" then
+		if type(widgetSkinTable.height) == 'number' then
 			f:SetHeight(widgetSkinTable.height)
 		end
 		if widgetSkinTable.points then
@@ -523,17 +634,17 @@ function WIM_ApplySkinToWidget(f)
 		local widgetSkin = skin.message_window.widgets[f.widgetName] or f.defaultSkin
 		local oType = f:GetObjectType()
 		WIM_SetWidgetRect(f, widgetSkin)
-		if oType == "Button" or oType == "CheckButton" then
+		if oType == 'Button' or oType == 'CheckButton' then
 			if widgetSkin.NormalTexture then f:SetNormalTexture(widgetSkin.NormalTexture) end
 			if widgetSkin.PushedTexture then f:SetPushedTexture(widgetSkin.PushedTexture) end
 			if widgetSkin.DisabledTexture then f:SetDisabledTexture(widgetSkin.DisabledTexture) end
 			if widgetSkin.HighlightTexture then f:SetHighlightTexture(widgetSkin.HighlightTexture, widgetSkin.HighlightAlphaMode) end
 		end
-		if oType == "FontString" or oType == "ScrollingMessageFrame" or oType == "EditBox" then
+		if oType == 'FontString' or oType == 'ScrollingMessageFrame' or oType == 'EditBox' then
 			WIM_SetWidgetFont(f, widgetSkin)
 		end
 	else
-		dPrint("Invalid widget trying to be skinned.")
+		dPrint('Invalid widget trying to be skinned.')
 	end
 	if f.UpdateSkin then
 		f:UpdateSkin()
@@ -675,6 +786,7 @@ end
 function WIM_create_window(user)
 	local fName = 'WIM_msgFrame' .. user
 	local f = CreateFrame('Frame', fName, UIParent)
+	f:Hide()
 
 	f:SetClampedToScreen(true)
 	f:SetFrameStrata'DIALOG'
@@ -700,7 +812,7 @@ function WIM_create_window(user)
 		if WIM_Data.autoFocus == true then
 			getglobal(this:GetName() .. 'MsgBox'):SetFocus()
 		end
-		WIM_LoadShortcutFrame()
+--		WIM_LoadShortcutFrame()
 		WIM_WindowOnShow()
 	end)
 	f:SetScript('OnHide', function()
@@ -723,31 +835,31 @@ function WIM_create_window(user)
 	widgets.Backdrop = CreateFrame("Frame", fName.."Backdrop", f)
 	widgets.Backdrop:SetToplevel(false)
 	widgets.Backdrop:SetAllPoints(f)
-	widgets.class_icon = widgets.Backdrop:CreateTexture(fName.."BackdropClassIcon", "BACKGROUND")
+	widgets.class_icon = widgets.Backdrop:CreateTexture(fName .. "BackdropClassIcon", "BACKGROUND")
 	widgets.class_icon.widgetName = "class_icon"
 	widgets.class_icon.parentWindow = f
-	widgets.Backdrop.tl = widgets.Backdrop:CreateTexture(fName.."Backdrop_TL", "BORDER")
-	widgets.Backdrop.tr = widgets.Backdrop:CreateTexture(fName.."Backdrop_TR", "BORDER")
-	widgets.Backdrop.bl = widgets.Backdrop:CreateTexture(fName.."Backdrop_BL", "BORDER")
-	widgets.Backdrop.br = widgets.Backdrop:CreateTexture(fName.."Backdrop_BR", "BORDER")
-	widgets.Backdrop.t  = widgets.Backdrop:CreateTexture(fName.."Backdrop_T" , "BORDER")
-	widgets.Backdrop.b  = widgets.Backdrop:CreateTexture(fName.."Backdrop_B" , "BORDER")
-	widgets.Backdrop.l  = widgets.Backdrop:CreateTexture(fName.."Backdrop_L" , "BORDER")
-	widgets.Backdrop.r  = widgets.Backdrop:CreateTexture(fName.."Backdrop_R" , "BORDER")
-	widgets.Backdrop.bg = widgets.Backdrop:CreateTexture(fName.."Backdrop_BG", "BORDER")
-	widgets.from = widgets.Backdrop:CreateFontString(fName.."BackdropFrom", "OVERLAY", "GameFontNormalLarge")
+	widgets.Backdrop.tl = widgets.Backdrop:CreateTexture(fName .. "Backdrop_TL", "BORDER")
+	widgets.Backdrop.tr = widgets.Backdrop:CreateTexture(fName .. "Backdrop_TR", "BORDER")
+	widgets.Backdrop.bl = widgets.Backdrop:CreateTexture(fName .. "Backdrop_BL", "BORDER")
+	widgets.Backdrop.br = widgets.Backdrop:CreateTexture(fName .. "Backdrop_BR", "BORDER")
+	widgets.Backdrop.t  = widgets.Backdrop:CreateTexture(fName .. "Backdrop_T" , "BORDER")
+	widgets.Backdrop.b  = widgets.Backdrop:CreateTexture(fName .. "Backdrop_B" , "BORDER")
+	widgets.Backdrop.l  = widgets.Backdrop:CreateTexture(fName .. "Backdrop_L" , "BORDER")
+	widgets.Backdrop.r  = widgets.Backdrop:CreateTexture(fName .. "Backdrop_R" , "BORDER")
+	widgets.Backdrop.bg = widgets.Backdrop:CreateTexture(fName .. "Backdrop_BG", "BORDER")
+	widgets.from = widgets.Backdrop:CreateFontString(fName .. "BackdropFrom", "OVERLAY", "GameFontNormalLarge")
 	widgets.from.widgetName = "from"
-	widgets.char_info = widgets.Backdrop:CreateFontString(fName.."BackdropCharacterDetails", "OVERLAY", "GameFontNormal")
+	widgets.char_info = widgets.Backdrop:CreateFontString(fName .. "BackdropCharacterDetails", "OVERLAY", "GameFontNormal")
 	widgets.char_info.widgetName = "char_info"
 
 	-- create core window objects
-	widgets.close = CreateFrame("Button", fName.."ExitButton", f)
+	widgets.close = CreateFrame("Button", fName .. "ExitButton", f)
 	widgets.close:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 	widgets.close.curTextureIndex = 1
 	widgets.close.parentWindow = f
 	widgets.close.widgetName = "close"
 
-	widgets.scroll_up = CreateFrame("Button", fName.."ScrollUp", f)
+	widgets.scroll_up = CreateFrame("Button", fName .. "ScrollUp", f)
 	widgets.scroll_up:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 	widgets.scroll_up.widgetName = "scroll_up"
 
@@ -769,18 +881,18 @@ function WIM_create_window(user)
 	widgets.chat_display.widgetName = 'chat_display'
 
 	widgets.msg_box = CreateFrame('EditBox', fName .. 'MsgBox', f)
-	widgets.msg_box:SetAutoFocus(false);
-	widgets.msg_box:SetHistoryLines(32);
-	-- widgets.msg_box:SetMaxLetters(255);
-	widgets.msg_box:SetAltArrowKeyMode(true);
-	widgets.msg_box:EnableMouse(true);
+	widgets.msg_box:SetAutoFocus(false)
+	widgets.msg_box:SetHistoryLines(32)
+	-- widgets.msg_box:SetMaxLetters(255)
+	widgets.msg_box:SetAltArrowKeyMode(true)
+	widgets.msg_box:EnableMouse(true)
 	widgets.msg_box.widgetName = 'msg_box'
 
 	-- Addmessage functions
 	f.AddMessage = function(self, msg, ...)
 		msg = applyStringModifiers(msg, self.widgets.chat_display)
 		self.widgets.chat_display:AddMessage(msg, unpack(arg))
-		updateScrollBars(self);
+		updateScrollBars(self)
 		CallModuleFunction('OnWindowMessageAdded', self, msg, unpack(arg))
 	end
 
@@ -793,7 +905,7 @@ function WIM_create_window(user)
 		local str = applyMessageFormatting(self.widgets.chat_display, event, unpack(arg))
 		self:AddMessage(str, r, g, b)
 		self.msgWaiting = true;
-		self.lastActivity = _G.GetTime()
+		self.lastActivity = GetTime()
 		if self.tabStrip then
 			self.tabStrip:UpdateTabs()
 		end
@@ -839,10 +951,10 @@ function WIM_create_window(user)
 				Name = self.theUser,
 				Online = true,
 				Guild = 'Blizzard',
-				Class = L["Game Master"],
-				Level = "",
-				Race = "",
-				Zone = L["Unknown"],
+				Class = 'Game Master',
+				Level = '',
+				Race = '',
+				Zone = 'Unknown',
 			}
 		else
 			if whoLib then
@@ -852,77 +964,77 @@ function WIM_create_window(user)
 						timeout = 0,
 						-- flags = whoLib.WHOLIB_FLAG_ALWAYS_CALLBACK,
 						callback = self.WhoCallback
-					});
+					})
 				if(result) then
-					self.WhoCallback(result);
+					self.WhoCallback(result)
 				end
 			else
-				dPrint("WhoLib-1.0 not loaded... Skipping who lookup!");
+				dPrint("WhoLib-1.0 not loaded... Skipping who lookup!")
 			end
 		end
 	end
 
 	f.GetRuleSet = function(self)
-		if(db.pop_rules[self.type]) then
-			local curState = db.pop_rules[self.type].alwaysOther and "other" or curState
-			return db.pop_rules[self.type][curState];
+		if db.pop_rules[self.type] then
+			local curState = db.pop_rules[self.type].alwaysOther and 'other' or curState
+			return db.pop_rules[self.type][curState]
 		else
-			return db.pop_rules.whisper.other;
+			return db.pop_rules.whisper.other
 		end
 	end
 
 	-- PopUp rules
 	f.Pop = function(self, msgDirection, forceResult, forceFocus) -- true to force show, false it ignore rules and force quiet.
 	-- account for variable arguments.
-	if(type(msgDirection) == "boolean") then
-		forceResult, forceFocus = msgDirection, forceResult;
-		msgDirection = "in";
-	elseif(msgDirection == nil) then
-		msgDirection = "in";
+	if type(msgDirection) == "boolean" then
+		forceResult, forceFocus = msgDirection, forceResult
+		msgDirection = "in"
+	elseif msgDirection == nil then
+		msgDirection = "in"
 	end
 
-	local rules = self:GetRuleSet(); -- defaults incase unknown
+	local rules = self:GetRuleSet() -- defaults incase unknown
 
 	-- pass isNew to pop ruleset.
 	if forceResult == true then
 		-- go by forceResult and ignore rules
-		if(self.tabStrip) then
+		if self.tabStrip then
 			-- if(not EditBoxInFocus) then
-			ShowContainer();
-			self.tabStrip:JumpToTab(self);
+			ShowContainer()
+			self.tabStrip:JumpToTab(self)
 			if(not getVisibleChatFrameEditBox() and (rules.autofocus or forceFocus)) then
-				self.widgets.msg_box:SetFocus();
+				self.widgets.msg_box:SetFocus()
 			end
 			-- end
 		else
-			ShowContainer();
-			self:ResetAnimation();
-			self:Show();
+			ShowContainer()
+			self:ResetAnimation()
+			self:Show()
 			if (not getVisibleChatFrameEditBox() and not EditBoxInFocus and rules.autofocus) or forceFocus then
-				self.widgets.msg_box:SetFocus();
+				self.widgets.msg_box:SetFocus()
 			end
-			local count = 0;
+			local count = 0
 			for _, window in WIM_Windows do
 				count = window.obj:IsShown() and count + 1 or count
 			end
 		end
 	else
 		-- execute pop rules.
-		if((rules.onSend and msgDirection == "out") or (rules.onReceive and msgDirection == "in")) then
-			if(self.tabStrip) then
-				self:ResetAnimation();
-				local infocus = EditBoxInFocus and EditBoxInFocus:GetParent().tabStrip;
-				if(infocus ~= self.tabStrip) then
-					self.tabStrip:JumpToTab(self);
-					setWindowAsFadedIn(self);
+		if (rules.onSend and msgDirection == "out") or (rules.onReceive and msgDirection == "in") then
+			if self.tabStrip then
+				self:ResetAnimation()
+				local infocus = EditBoxInFocus and EditBoxInFocus:GetParent().tabStrip
+				if infocus ~= self.tabStrip then
+					self.tabStrip:JumpToTab(self)
+					setWindowAsFadedIn(self)
 				end
 			else
-				self:ResetAnimation();
-				self:Show();
-				setWindowAsFadedIn(self);
+				self:ResetAnimation()
+				self:Show()
+				setWindowAsFadedIn(self)
 			end
-			if(self:IsVisible() and not getVisibleChatFrameEditBox and not EditBoxInFocus and rules.autofocus) then
-				self.widgets.msg_box:SetFocus();
+			if self:IsVisible() and not getVisibleChatFrameEditBox and not EditBoxInFocus and rules.autofocus then
+				self.widgets.msg_box:SetFocus()
 			end
 		end
 	end
@@ -933,38 +1045,38 @@ function WIM_create_window(user)
 	end
 
 	f.UpdateProps = function(self)
-		self:SetFrameStrata(db.winSize.strata);
-		self:SetScale(db.winSize.scale/100);
-		self.widgets.Backdrop:SetAlpha(db.windowAlpha/100);
-		local Path,_,Flags = self.widgets.chat_display:GetFont();
+		self:SetFrameStrata(db.winSize.strata)
+		self:SetScale(db.winSize.scale/100)
+		self.widgets.Backdrop:SetAlpha(db.windowAlpha/100)
+		local Path,_,Flags = self.widgets.chat_display:GetFont()
 		self:SetClampedToScreen(true)
-		self.widgets.chat_display:SetFont(Path or _G["ChatFontNormal"]:GetFont(),db.fontSize+2,Flags);
-		self.widgets.chat_display:SetAlpha(1);
+		self.widgets.chat_display:SetFont(Path or _G["ChatFontNormal"]:GetFont(),db.fontSize+2,Flags)
+		self.widgets.chat_display:SetAlpha(1)
 --		self.widgets.chat_display:SetIndentedWordWrap(db.wordwrap_indent); -- TODO
-		self.widgets.msg_box:SetAlpha(1);
-		self.widgets.msg_box:SetAltArrowKeyMode(db.ignoreArrowKeys);
+		self.widgets.msg_box:SetAlpha(1)
+		self.widgets.msg_box:SetAltArrowKeyMode(db.ignoreArrowKeys)
 
-		self.widgets.from:SetAlpha(1);
-		self.widgets.char_info:SetAlpha(1);
-		self.widgets.close:SetAlpha(db.windowAlpha);
-		self.widgets.scroll_up:SetAlpha(db.windowAlpha);
-		self.widgets.scroll_down:SetAlpha(db.windowAlpha);
+		self.widgets.from:SetAlpha(1)
+		self.widgets.char_info:SetAlpha(1)
+		self.widgets.close:SetAlpha(db.windowAlpha)
+		self.widgets.scroll_up:SetAlpha(db.windowAlpha)
+		self.widgets.scroll_down:SetAlpha(db.windowAlpha)
 
-		if(not self.customSize) then
-			self:SetWidth(db.winSize.width);
-			self:SetHeight(db.winSize.height);
+		if not self.customSize then
+			self:SetWidth(db.winSize.width)
+			self:SetHeight(db.winSize.height)
 		end
 
-		local minWidth, minHeight = skin.message_window.min_width, skin.message_window.min_height;
+		local minWidth, minHeight = skin.message_window.min_width, skin.message_window.min_height
 
 		-- process registered widgets
 		local widgetName, widgetObj;
 		for widgetName, widgetObj in pairs(f.widgets) do
-			if(type(widgetObj.UpdateProps) == "function") then
+			if type(widgetObj.UpdateProps) == 'function' then
 				widgetObj:UpdateProps();
 			end
-			if(widgetObj.type) then
-				if(widgetObj.enabled and string.match(widgetObj.type, f.type)) then
+			if widgetObj.type then
+				if widgetObj.enabled and string.match(widgetObj.type, f.type) then
 					widgetObj:Show();
 					local w, h = widgetObj:GetWidth(), widgetObj:GetHeight();
 					minWidth = _G.math.max(minWidth, (self:SafeGetLeft() - widgetObj:GetLeft()) + w + (widgetObj:GetRight() - self:SafeGetRight()));
@@ -982,64 +1094,105 @@ function WIM_create_window(user)
 
 	f.Hide_Normal = f.Hide;
 	f.Hide = function(self, animate)
-		if(not self:IsShown() or self.animation.mode) then
+		if not self:IsShown() or self.animation.mode then
 			-- don't do anything if window is already hidden.
 			return;
 		end
-		if(not animate) then
-			self:Hide_Normal();
-			self:ResetAnimation();
+		if not animate then
+			self:Hide_Normal()
+			self:ResetAnimation()
 		else
 
-			if(not db.winAnimation) then
-				self:Hide_Normal();
-				self:ResetAnimation();
+			if not db.winAnimation then
+				self:Hide_Normal()
+				self:ResetAnimation()
 			else
 				self.widgets.chat_display:SetParent(UIParent)
-				self.widgets.chat_display:Hide();
-				local a = self.animation;
-				f:SetClampedToScreen(false);
-				a.initLeft = self:SafeGetLeft();
-				a.initTop = self:SafeGetTop();
-				a.to = MinimapIcon or nil;
-				a.elapsed, a.time = 0, .5;
+				self.widgets.chat_display:Hide()
+				local a = self.animation
+				f:SetClampedToScreen(false)
+				a.initLeft = self:SafeGetLeft()
+				a.initTop = self:SafeGetTop()
+				a.to = MinimapIcon or nil
+				a.elapsed, a.time = 0, .5
 				a.scaleLimit = .001 -- _G.math.max(_G.math.ceil((100-_G.UIParent:GetScale()*100)/2)/100 + .04, .01);
 				a.mode = "HIDE"; -- this starts the animation
-				dPrint("Animation Started: "..self:GetName());
+				dPrint("Animation Started: "..self:GetName())
 			end
 		end
 	end
 	f.ResetAnimation = function(self)
 		if(self.animation.mode) then
-			self:SetClampedToScreen(not WindowParent.animUp and db.clampToScreen);
-			self:SetScale_Orig(db.winSize.scale/100);
-			self:ClearAllPoints();
-			self:SetPoint("TOPLEFT", WindowParent, "BOTTOMLEFT", self.animation.initLeft, self.animation.initTop - WindowParent:GetBottom());
-			self.widgets.chat_display:Show();
-			self.widgets.chat_display:SetParent(self);
-			dPrint("Animation Reset: "..self:GetName());
+			self:SetClampedToScreen(not WindowParent.animUp and db.clampToScreen)
+			self:SetScale_Orig(db.winSize.scale/100)
+			self:ClearAllPoints()
+			self:SetPoint("TOPLEFT", WindowParent, "BOTTOMLEFT", self.animation.initLeft, self.animation.initTop - WindowParent:GetBottom())
+			self.widgets.chat_display:Show()
+			self.widgets.chat_display:SetParent(self)
+			dPrint("Animation Reset: " .. self:GetName())
 		end
 		for key, _ in pairs(self.animation) do
 			self.animation[key] = nil;
 		end
 	end
 	f.SafeGetLeft = function(self)
-		return self:GetLeft() - WindowParent:GetLeft();
+		return self:GetLeft() - WindowParent:GetLeft()
 	end
 	f.SafeGetRight = function(self)
-		return self:GetRight() - WindowParent:GetLeft();
+		return self:GetRight() - WindowParent:GetLeft()
 	end
 	f.SafeGetTop = function(self)
-		return self:GetTop() - WindowParent:GetBottom();
+		return self:GetTop() - WindowParent:GetBottom()
 	end
 	f.SafeGetBottom = function(self)
-		return self:GetBottom() - WindowParent:GetBottom();
+		return self:GetBottom() - WindowParent:GetBottom()
 	end
 
 	-- enforce that all core widgets have parentWindow set.
-	local w;
 	for _, w in pairs(f.widgets) do
-		w.parentWindow = f;
+		w.parentWindow = f
+	end
+
+	local shortcuts = CreateFrame('Frame', nil, f)
+	shortcuts.widgetName = 'shortcuts'
+	shortcuts.parentWindow = f
+	WIM_ApplySkinToWidget(shortcuts)
+
+	shortcuts.buttons = {}
+	for i = 1, getn(buttons) do
+		tinsert(shortcuts.buttons, createButton(shortcuts, i))
+	end
+	local skin = skin.message_window.widgets.shortcuts
+
+	local spacing = skin.spacing
+	for i = 1, getn(shortcuts.buttons) do
+		shortcuts.buttons[i]:ClearAllPoints()
+		if i == 1 then
+			shortcuts.buttons[i]:SetPoint('TOPLEFT', shortcuts, 'TOPLEFT', 0, 0)
+			shortcuts.buttons[i]:SetPoint('TOPRIGHT', shortcuts, 'TOPRIGHT', 0, 0)
+		else
+			shortcuts.buttons[i]:SetPoint('TOPLEFT', shortcuts.buttons[i - 1], 'BOTTOMLEFT', 0, -spacing)
+			shortcuts.buttons[i]:SetPoint('TOPRIGHT', shortcuts.buttons[i - 1], 'BOTTOMRIGHT', 0, -spacing)
+		end
+		shortcuts.buttons[i].index = i
+		shortcuts.buttons[i]:SetNormalTexture(skin.buttons.NormalTexture)
+		shortcuts.buttons[i]:SetPushedTexture(skin.buttons.PushedTexture)
+		shortcuts.buttons[i]:SetHighlightTexture(skin.buttons.HighlightTexture, skin.buttons.HighlightAlphaMode)
+		shortcuts.buttons[i].icon:SetTexture(skin.buttons.icons[buttons[i].id] or [[Interface\Icons\INV_Misc_QuestionMark]])
+	end
+
+	shortcuts.visibleCount = 0
+	for i = 1, getn(shortcuts.buttons) do
+		if shortcuts.buttons[i].isEnabled then
+			shortcuts.visibleCount = shortcuts.visibleCount + 1
+			shortcuts.buttons[i]:SetHeight(shortcuts:GetWidth())
+		else
+			shortcuts.buttons[i]:SetHeight(.001 - skin.spacing)
+		end
+	end
+	-- must update window props to account for size restrictions
+	if shortcuts.parentWindow and shortcuts.parentWindow.initialized then
+		shortcuts.parentWindow:UpdateProps()
 	end
 
 --	loadRegisteredWidgets(f);
@@ -1050,10 +1203,10 @@ end
 
 function WIM_LoadWindowDefaults(f)
 	f:Hide()
-	f.age = _G.GetTime()
+	f.age = GetTime()
 	f.hasMoved = false
 
-	f.lastActivity = _G.GetTime()
+	f.lastActivity = GetTime()
 
 	f.customSize = false
 
@@ -1078,16 +1231,16 @@ function WIM_LoadWindowDefaults(f)
 	f.widgets.from:SetText(f.theUser)
 	f.widgets.from:SetTextColor(RGBHexToPercent(skin.message_window.widgets.from.font_color))
 
-	f.widgets.char_info:SetText("")
+	f.widgets.char_info:SetText''
 
 	f.widgets.msg_box.setText = 0
-	f.widgets.msg_box:SetText("")
+	f.widgets.msg_box:SetText''
 	f.widgets.msg_box:Show()
 
 	f.widgets.chat_display:Clear()
-	f.widgets.chat_display:AddMessage("  ")
-	f.widgets.chat_display:AddMessage("  ")
---	updateScrollBars(f);
+	f.widgets.chat_display:AddMessage'  '
+	f.widgets.chat_display:AddMessage'  '
+--	updateScrollBars(f)
 
 	f.widgets.close.forceShift = false
 
@@ -1098,7 +1251,7 @@ function WIM_LoadWindowDefaults(f)
 	-- process registered widgets
 	local widgetName, widgetObj
 	for widgetName, widgetObj in pairs(f.widgets) do
-		if type(widgetObj.SetDefaults) == "function" then
+		if type(widgetObj.SetDefaults) == 'function' then
 			widgetObj:SetDefaults()
 		end
 	end
