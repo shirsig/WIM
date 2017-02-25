@@ -2,13 +2,6 @@ local _G = getfenv(0)
 
 local ShortcutCount = 5
 
-local function formatDetails(window, guild, level, race, class)
-	if guild ~= '' then
-		guild = '<' .. guild .. '> '
-	end
-	return '|cffffffff' .. guild .. level .. ' ' .. race .. ' ' .. class .. '|r'
-end
-
 local skin = {
 	message_window = {
 		texture = [[Interface\AddOns\WIM\textures\message_window]],
@@ -67,7 +60,7 @@ local skin = {
 				width = 64,
 				height = 64,
 				points = {
-					{"TOPLEFT", "window", "TOPLEFT", -10, 12}
+					{'TOPLEFT', 'window', 'TOPLEFT', -10, 12}
 				},
 				is_round = true,
 				blank = {.5, .5, .5, .75, .75, .5, .75, .75},
@@ -80,25 +73,19 @@ local skin = {
 				shaman = {.5, .25, .5, .5, .75, .25, .75, .5},
 				warlock = {.75, .25, .75, .5, 1, .25, 1, .5},
 				warrior = {0, .5, 0, .75, .25, .5, .25, .75},
-				deathknight = {.75, .5, .75, .75, 1, .5, 1, .75},
-				monk = {0, .75, 0, 1, .25, .75, .25, 1},
 				gm = {.25, .5, .25, .75, .5, .5, .5, .75},
-				demonhunter = {.75, .75, .75, 1, 1, .75, 1, 1}
-				--d3 = {.5, .75, .5, 1, .75, .75, .75, 1},
-				--bnd = {.25, .75, .25, 1, .5, .75, .5, 1}
 			},
 			from = {
 				points = {
-					{"TOPLEFT", "window", "TOPLEFT", 50, -8}
+					{'TOPLEFT', 'window', 'TOPLEFT', 50, -8}
 				},
 				font = 'GameFontNormalLarge', -- TODO FriendsFont_Normal
-				font_color = "ffffff",
+				font_color = 'ffffff',
 				font_height = 16,
-				font_flags = "",
+				font_flags = '',
 				use_class_color = true
 			},
 			char_info = {
-				format = formatDetails,
 				points = {
 					{"TOP", "window", "TOP", 0, -30}
 				},
@@ -133,26 +120,6 @@ local skin = {
 				height = 18,
 				points = {
 					{"TOPRIGHT", "window", "TOPRIGHT", -28, -6}
-				}
-			},
-			w2w = {
-				NormalTexture = [[Interface\AddOns\WIM\textures\w2w]],
-				PushedTexture = [[Interface\AddOns\WIM\textures\w2w]],
-				HighlightTexture = [[Interface\AddOns\WIM\textures\w2w]],
-				HighlightAlphaMode = "ADD",
-				points = {
-					{"TOPLEFT", "class_icon", 14, -14},
-					{"BOTTOMRIGHT", "class_icon", -14, 14}
-				}
-			},
-			chat_info = {
-				NormalTexture = nil, -- by default we don't want a texture, but your skin is welcome to have one.
-				PushedTexture = [[Interface\AddOns\WIM\textures\w2w]],
-				HighlightTexture = [[Interface\AddOns\WIM\textures\w2w]],
-				HighlightAlphaMode = "ADD",
-				points = {
-					{"TOPLEFT", "class_icon", 14, -14},
-					{"BOTTOMRIGHT", "class_icon", -14, 14}
 				}
 			},
 			chatting = {
@@ -233,46 +200,6 @@ local skin = {
 				}
 			}
 		},
-	},
-	tab_strip = {
-		textures = {
-			tab = {
-				NormalTexture = [[Interface\AddOns\WIM\textures\tab_normal]],
-				PushedTexture = [[Interface\AddOns\WIM\textures\tab_selected]],
-				HighlightTexture = [[Interface\AddOns\WIM\textures\tab_flash]],
-				HighlightAlphaMode = "ADD"
-			},
-			prev = {
-				NormalTexture = "Interface\\MoneyFrame\\Arrow-Left-Up",
-				PushedTexture = "Interface\\MoneyFrame\\Arrow-Left-Down",
-				DisabledTexture = "Interface\\MoneyFrame\\Arrow-Left-Disabled",
-				HighlightTexture = [[Interface\AddOns\WIM\textures\TabArrowLeft]],
-				HighlightAlphaMode = "ADD",
-				height = 20,
-				width = 20,
-			},
-			next = {
-				NormalTexture = "Interface\\MoneyFrame\\Arrow-Right-Up",
-				PushedTexture = "Interface\\MoneyFrame\\Arrow-Right-Down",
-				DisabledTexture = "Interface\\MoneyFrame\\Arrow-Right-Disabled",
-				HighlightTexture = [[Interface\AddOns\WIM\textures\TabArrowRight]],
-				HighlightAlphaMode = 'ADD',
-				height = 20,
-				width = 20,
-			},
-		},
-		height = 26,
-		points = {
-			{"BOTTOMLEFT", "window", "TOPLEFT", 38, -4},
-			{"BOTTOMRIGHT", "window", "TOPRIGHT", -20, -4}
-		},
-		text = {
-			font = 'ChatFontNormal',
-			font_color = {1, 1, 1},
-			font_height = 12,
-			font_flags = '',
-		},
-		vertical = false,
 	},
 	emoticons = {
 		width = 0,
@@ -468,44 +395,25 @@ local buttons = {
 		id = 'location',
 		title = 'Player Location',
 		click = function(self, button)
-			_G.CloseDropDownMenus()
-			if button == 'LeftButton' then
-				self.parentWindow:SendWho()
-			else
-				WIM.MENU_ARMORY_USER = self.parentWindow.theUser
-				WIM.MENU_ARMORY_REALM = env.realm
-				if(self.parentWindow.isBN) then
-					WIM.MENU_ARMORY_USER = self.parentWindow.bn.toonName
-					WIM.MENU_ARMORY_REALM = self.parentWindow.bn.realmName
-				end
-				PopContextMenu('MENU_ARMORY', self:GetName())
-			end
+--			CloseDropDownMenus()
+--			if button == 'LeftButton' then
+--				self.parentWindow:SendWho()
+--			end
 		end,
 		enter = function(self)
-			local location = self.parentWindow.location ~= '' and self.parentWindow.location or 'Unknown'
-			local tbl = self.parentWindow.w2w
-			if not tbl or not tbl.services then
-				GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
-				GameTooltip:AddLine("|cff"..self.parentWindow.classColor..self.parentWindow.theUser.."|r")
-				if(self.parentWindow.isBN) then
-					local bn = self.parentWindow.bn;
-					if bn.toonName and bn.toonName ~= "" then _G.GameTooltip:AddDoubleLine('Character:', "|cffffffff"..bn.toonName.."|r") end
-				end
-				GameTooltip:AddDoubleLine('Location'..":", "|cffffffff"..location.."|r")
-				GameTooltip:AddLine("|cff69ccf0"..'Click to update...'.."|r")
-				GameTooltip:AddLine("|cff69ccf0"..'Right-Click for profile links...'.."|r")
-				GameTooltip:Show()
-			else
-				--w2w tooltip
-				ShowW2WTip(self.parentWindow, self, "ANCHOR_RIGHT")
-			end
+--			local location = self.parentWindow.location ~= '' and self.parentWindow.location or 'Unknown'
+--			GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
+--			GameTooltip:AddLine('|cff' .. self.parentWindow.classColor .. self.parentWindow.theUser .. '|r')
+--			GameTooltip:AddDoubleLine('Location:', '|cffffffff' .. location .. '|r')
+--			GameTooltip:AddLine('|cff69ccf0' .. 'Click to update...' .. '|r')
+--			GameTooltip:Show()
 		end,
 	},
 	{
 		id = 'invite',
 		title = 'Invite to Party',
 		click = function(self)
-			_G.InviteUnit(self.parentWindow.theUser)
+			InviteUnit(self.parentWindow.theUser)
 		end,
 		enter = function() end,
 	},
@@ -513,15 +421,15 @@ local buttons = {
 		id = 'friend',
 		title = 'Add Friend',
 		click = function(self)
-			_G.AddFriend(self.parentWindow.theUser)
+			AddFriend(self.parentWindow.theUser)
 		end,
 		enter = function() end,
 	},
 	{
 		id = 'ignore',
 		title = 'Ignore User',
-		click = function(self)
-			local win = self.parentWindow
+		click = function()
+			local win = this.parentWindow
 			StaticPopupDialogs.WIM_IGNORE = {
 				preferredIndex = STATICPOPUP_NUMDIALOGS,
 				text = format('Are you sure you want to\nignore %s?', "|cff69ccf0" .. win.theUser .. "|r"),
@@ -756,31 +664,14 @@ function WIM_ApplySkinToWindow(f)
 	local chat_display = f.widgets.chat_display
 	WIM_ApplySkinToWidget(chat_display)
 	local font, height, flags
-	if not db.skin.suggest then
-		font, height, flags = _G[db.skin.font]:GetFont()
-		chat_display:SetFont(font, db.fontSize + 2, db.skin.font_outline)
-	end
 
 	--msg_box
 	local msg_box = f.widgets.msg_box
 	WIM_ApplySkinToWidget(msg_box)
-	if not db.skin.suggest then
-		msg_box:SetFont(font, skin.message_window.widgets.msg_box.font_height, WIM.db.skin.font_outline)
-	end
 	--msg_box:SetTextColor(skin.message_window.widgets.msg_box.font_color[1], skin.message_window.widgets.msg_box.font_color[2], skin.message_window.widgets.msg_box.font_color[3])
-
-
-	--apply skin to registered widgets TODO
---	for widget, _ in pairs(windows.widgets) do
---		if f.widgets[widget] and skin.message_window.widgets[widget] then
---			dPrint("Applying skin to '"..widget.."'.")
---			WIM_ApplySkinToWidget(f.widgets[widget])
---		end
---	end
 
 	f:UpdateProps()
 --	f:UpdateIcon()
-	f:UpdateCharDetails()
 end
 
 function WIM_create_window(user)
@@ -831,32 +722,32 @@ function WIM_create_window(user)
 	local widgets = f.widgets
 
 	-- add window backdrop frame
-	widgets.Backdrop = CreateFrame("Frame", fName.."Backdrop", f)
+	widgets.Backdrop = CreateFrame('Frame', fName .. 'Backdrop', f)
 	widgets.Backdrop:SetToplevel(false)
 	widgets.Backdrop:SetAllPoints(f)
-	widgets.class_icon = widgets.Backdrop:CreateTexture(fName .. "BackdropClassIcon", "BACKGROUND")
-	widgets.class_icon.widgetName = "class_icon"
+	widgets.class_icon = widgets.Backdrop:CreateTexture(fName .. 'BackdropClassIcon', 'BACKGROUND')
+	widgets.class_icon.widgetName = 'class_icon'
 	widgets.class_icon.parentWindow = f
-	widgets.Backdrop.tl = widgets.Backdrop:CreateTexture(fName .. "Backdrop_TL", "BORDER")
-	widgets.Backdrop.tr = widgets.Backdrop:CreateTexture(fName .. "Backdrop_TR", "BORDER")
-	widgets.Backdrop.bl = widgets.Backdrop:CreateTexture(fName .. "Backdrop_BL", "BORDER")
-	widgets.Backdrop.br = widgets.Backdrop:CreateTexture(fName .. "Backdrop_BR", "BORDER")
-	widgets.Backdrop.t  = widgets.Backdrop:CreateTexture(fName .. "Backdrop_T" , "BORDER")
-	widgets.Backdrop.b  = widgets.Backdrop:CreateTexture(fName .. "Backdrop_B" , "BORDER")
-	widgets.Backdrop.l  = widgets.Backdrop:CreateTexture(fName .. "Backdrop_L" , "BORDER")
-	widgets.Backdrop.r  = widgets.Backdrop:CreateTexture(fName .. "Backdrop_R" , "BORDER")
-	widgets.Backdrop.bg = widgets.Backdrop:CreateTexture(fName .. "Backdrop_BG", "BORDER")
-	widgets.from = widgets.Backdrop:CreateFontString(fName .. "BackdropFrom", "OVERLAY", "GameFontNormalLarge")
-	widgets.from.widgetName = "from"
-	widgets.char_info = widgets.Backdrop:CreateFontString(fName .. "BackdropCharacterDetails", "OVERLAY", "GameFontNormal")
-	widgets.char_info.widgetName = "char_info"
+	widgets.Backdrop.tl = widgets.Backdrop:CreateTexture(fName .. "Backdrop_TL", 'BORDER')
+	widgets.Backdrop.tr = widgets.Backdrop:CreateTexture(fName .. "Backdrop_TR", 'BORDER')
+	widgets.Backdrop.bl = widgets.Backdrop:CreateTexture(fName .. "Backdrop_BL", 'BORDER')
+	widgets.Backdrop.br = widgets.Backdrop:CreateTexture(fName .. "Backdrop_BR", 'BORDER')
+	widgets.Backdrop.t  = widgets.Backdrop:CreateTexture(fName .. "Backdrop_T" , 'BORDER')
+	widgets.Backdrop.b  = widgets.Backdrop:CreateTexture(fName .. "Backdrop_B" , 'BORDER')
+	widgets.Backdrop.l  = widgets.Backdrop:CreateTexture(fName .. "Backdrop_L" , 'BORDER')
+	widgets.Backdrop.r  = widgets.Backdrop:CreateTexture(fName .. "Backdrop_R" , 'BORDER')
+	widgets.Backdrop.bg = widgets.Backdrop:CreateTexture(fName .. "Backdrop_BG", 'BORDER')
+	widgets.from = widgets.Backdrop:CreateFontString(fName .. 'BackdropFrom', 'OVERLAY', 'GameFontNormalLarge')
+	widgets.from.widgetName = 'from'
+	widgets.char_info = widgets.Backdrop:CreateFontString(fName .. 'BackdropCharacterDetails', 'OVERLAY', 'GameFontNormal')
+	widgets.char_info.widgetName = 'char_info'
 
 	-- create core window objects
-	widgets.close = CreateFrame("Button", fName .. "ExitButton", f)
-	widgets.close:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+	widgets.close = CreateFrame('Button', fName .. 'ExitButton', f)
+	widgets.close:RegisterForClicks('LeftButtonUp', 'RightButtonUp')
 	widgets.close.curTextureIndex = 1
 	widgets.close.parentWindow = f
-	widgets.close.widgetName = "close"
+	widgets.close.widgetName = 'close'
 	widgets.close:SetScript('OnEnter', function()
 		if WIM_Data.showToolTips then
 			GameTooltip:SetOwner(this, 'ANCHOR_TOPRIGHT')
@@ -896,13 +787,39 @@ function WIM_create_window(user)
 --		end
 --	end);
 
-	widgets.scroll_up = CreateFrame("Button", fName .. "ScrollUp", f)
-	widgets.scroll_up:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-	widgets.scroll_up.widgetName = "scroll_up"
+	widgets.scroll_up = CreateFrame('Button', fName .. 'ScrollUp', f)
+	widgets.scroll_up:RegisterForClicks("LeftButtonUp", 'RightButtonUp')
+	widgets.scroll_up.widgetName = 'scroll_up'
+	widgets.scroll_up:SetScript('OnClick', function()
+		if IsControlKeyDown() then
+			widgets.chat_display:ScrollToTop()
+		elseif IsShiftKeyDown() then
+			widgets.chat_display:PageUp()
+		else
+			widgets.chat_display:ScrollUp()
+		end
+		widgets.scroll_down:Enable()
+		if widgets.chat_display:AtTop() then
+			widgets.scroll_up:Disable()
+		end
+	end)
 
 	widgets.scroll_down = CreateFrame('Button', fName .. 'ScrollDown', f)
 	widgets.scroll_down:RegisterForClicks('LeftButtonUp', 'RightButtonUp')
 	widgets.scroll_down.widgetName = 'scroll_down'
+	widgets.scroll_up:SetScript('OnClick', function()
+		if IsControlKeyDown() then
+			widgets.chat_display:ScrollToBottom()
+		elseif IsShiftKeyDown() then
+			widgets.chat_display:PageDown()
+		else
+			widgets.chat_display:ScrollDown()
+		end
+		widgets.scroll_up:Enable()
+		if widgets.chat_display:AtBottom() then
+			widgets.scroll_down:Disable()
+		end
+	end)
 
 	widgets.chat_display = CreateFrame('ScrollingMessageFrame', fName .. 'ScrollingMessageFrame', f)
 	-- widgets.chat_display:RegisterForDrag("LeftButton")
@@ -924,6 +841,45 @@ function WIM_create_window(user)
 	widgets.msg_box:SetAltArrowKeyMode(true)
 	widgets.msg_box:EnableMouse(true)
 	widgets.msg_box.widgetName = 'msg_box'
+	widgets.msg_box:SetScript('OnEnterPressed', function()
+		local _, tParent = this:GetParent()
+		if strsub(this:GetText(), 1, 1) == '/' then
+			ChatFrameEditBox:SetText(this:GetText())
+			ChatEdit_SendText(ChatFrameEditBox, 1)
+		else
+			SendChatMessage(this:GetText(), "WHISPER", nil, this:GetParent().theUser)
+			this:AddHistoryLine(this:GetText())
+		end
+		this:SetText''
+		if not WIM_Data.keepFocus then
+			this:Hide()
+			this:Show()
+		elseif not IsResting() and WIM_Data.keepFocusRested then
+			this:Hide()
+			this:Show()
+		end
+
+--		if(strsub(self:GetText(), 1, 1) == "/") then
+--			EditBoxInFocus = nil;
+--			_G.ChatFrame1EditBox:SetText(self:GetText());
+--			_G.ChatEdit_SendText(_G.ChatFrame1EditBox, 1);
+--			self:SetText("");
+--			EditBoxInFocus = self;
+--		else
+--			if(self:GetText() == "") then
+--				self:Hide();
+--				self:Show();
+--				return;
+--			end
+--		end
+--		-- keep focus or not
+--		if(self:GetParent():GetRuleSet().keepfocus) then
+--			self:SetFocus();
+--		else
+--			self:Hide();
+--			self:Show();
+--		end
+	end)
 
 	-- Addmessage functions
 	f.AddMessage = function(self, msg, ...)
@@ -950,66 +906,36 @@ function WIM_create_window(user)
 
 	f.UpdateIcon = function(self)
 		local icon = self.widgets.class_icon
-		if self.type == "chat" and self.chatType then
-			icon:SetTexture(skin.message_window.widgets.class_icon.chatAlphaMask)
-			local chat_type = self.chatType == 'battleground' and 'INSTANCE_CHAT' or string.upper(self.chatType)
-			local color = _G.ChatTypeInfo[chat_type]; -- Drii: ticket 344
-			icon:SetTexCoord(0,1,0,1)
-			icon:SetGradient('VERTICAL', color.r, color.g, color.b, color.r, color.g, color.b)
-			if skin.message_window.widgets.from.use_class_color then
-				self.widgets.from:SetTextColor(color.r, color.g, color.b)
-			end
+		icon:SetGradient('VERTICAL', 1, 1, 1, 1, 1, 1)
+		if self.class == '' then
+			icon:SetTexture(skin.message_window.widgets.class_icon.texture)
+			icon:SetTexCoord(unpack(skin.message_window.widgets.class_icon.blank))
 		else
-			icon:SetGradient('VERTICAL', 1, 1, 1, 1, 1, 1)
-			if self.class == '' then
-				icon:SetTexture(skin.message_window.widgets.class_icon.texture)
-				icon:SetTexCoord(unpack(skin.message_window.widgets.class_icon.blank))
-			else
-				icon:SetTexture(skin.message_window.widgets.class_icon.texture)
-				icon:SetTexCoord(unpack(skin.message_window.widgets.class_icon[self.class]))
-			end
-			if skin.message_window.widgets.from.use_class_color then
-				local color = RAID_CLASS_COLORS[self.class]
-				self.widgets.from:SetTextColor(color.r, color.g, color.b)
-			end
+			icon:SetTexture(skin.message_window.widgets.class_icon.texture)
+			icon:SetTexCoord(unpack(skin.message_window.widgets.class_icon[self.class]))
+		end
+		if skin.message_window.widgets.from.use_class_color then
+			local color = RAID_CLASS_COLORS[self.class]
+			self.widgets.from:SetTextColor(color.r, color.g, color.b)
 		end
 	end
 
-	f.UpdateCharDetails = function(self)
-		self.widgets.char_info:SetText(skin.message_window.widgets.char_info.format(self, self.guild, self.level, self.race, self.class))
-	end
-
-	f.SendWho = function(self)
-		if self.type ~= 'whisper' then
-			return
-		end
-		if self.isGM then
-			self.WhoCallback{
-				Name = self.theUser,
-				Online = true,
-				Guild = 'Blizzard',
-				Class = 'Game Master',
-				Level = '',
-				Race = '',
-				Zone = 'Unknown',
-			}
-		else
-			if whoLib then
-				local result = whoLib:UserInfo(self.theUser,
-					{
-						queue = whoLib.WHOLIB_QUEUE_QUIET,
-						timeout = 0,
-						-- flags = whoLib.WHOLIB_FLAG_ALWAYS_CALLBACK,
-						callback = self.WhoCallback
-					})
-				if(result) then
-					self.WhoCallback(result)
-				end
-			else
-				dPrint("WhoLib-1.0 not loaded... Skipping who lookup!")
-			end
-		end
-	end
+--	f.SendWho = function(self)
+--
+--		if self.isGM then
+--			self.WhoCallback{
+--				Name = self.theUser,
+--				Online = true,
+--				Guild = 'Blizzard',
+--				Class = 'Game Master',
+--				Level = '',
+--				Race = '',
+--				Zone = 'Unknown',
+--			}
+--		else
+--
+--		end
+--	end
 
 	f.GetRuleSet = function(self)
 		if db.pop_rules[self.type] then

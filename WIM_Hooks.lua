@@ -285,14 +285,13 @@ end
 
 
 function WIM_SetItemRef (link, text, button)
-	if (WIM_isLinkURL(link)) then
-		WIM_DisplayURL(link);
-		return;
+	if WIM_isLinkURL(link) then
+		WIM_DisplayURL(link)
+		return
 	end
-	if (strsub(link, 1, 6) ~= "player") and ( IsShiftKeyDown() ) and ( not ChatFrameEditBox:IsVisible() ) then
-		local itemName = gsub(text, ".*%[(.*)%].*", "%1");
-		if(WIM_EditBoxInFocus) then
-			WIM_EditBoxInFocus:Insert(text);
+	if strsub(link, 1, 6) ~= 'player' and IsShiftKeyDown() and not ChatFrameEditBox:IsVisible() then
+		if WIM_EditBoxInFocus then
+			WIM_EditBoxInFocus:Insert(text)
 		end
 	end
 end
