@@ -959,57 +959,7 @@ function WIM_SetWIM_Enabled(YesOrNo)
 end
 
 function WIM_LoadShortcutFrame()
-	local tButtons = {
-		{
-			icon = "Interface\\Icons\\Ability_Hunter_AimedShot",
-			cmd		= "target",
-			tooltip = "Target"
-		},
-		{
-			icon = "Interface\\Icons\\Spell_Holy_BlessingOfStrength",
-			cmd		= "invite",
-			tooltip = "Invite"
-		},
-		{
-			icon = "Interface\\Icons\\INV_Misc_Bag_10_Blue",
-			cmd		= "trade",
-			tooltip = "Trade"
-		},
-		{
-			icon = "Interface\\Icons\\INV_Helmet_44",
-			cmd		= "inspect",
-			tooltip = "Inspect"
-		},
-		{
-			icon = "Interface\\Icons\\Ability_Physical_Taunt",
-			cmd		= "ignore",
-			tooltip = "Ignore"
-		},
-	};
-	for i = 1, 5 do
-		getglobal(this:GetName().."ShortcutFrameButton"..i.."Icon"):SetTexture(tButtons[i].icon)
-		getglobal(this:GetName().."ShortcutFrameButton"..i).cmd = tButtons[i].cmd
-		getglobal(this:GetName().."ShortcutFrameButton"..i).tooltip = tButtons[i].tooltip
-	end
 	getglobal(this:GetName() .. 'ShortcutFrame'):SetScale(.75)
-end
-
-function WIM_ShorcutButton_Clicked()
-	local cmd = this.cmd;
-	local theUser = this:GetParent():GetParent().theUser;
-	if(cmd == "target") then
-		TargetByName(theUser, true)
-	elseif(cmd == "invite") then
-		InviteByName(theUser)
-	elseif(cmd == "trade") then
-		TargetByName(theUser, true)
-		InitiateTrade("target")
-	elseif(cmd == "inspect") then
-		TargetByName(theUser, true)
-		InspectUnit("target")
-	elseif(cmd == "ignore") then
-		getglobal(this:GetParent():GetParent():GetName().."IgnoreConfirm"):Show()
-	end
 end
 
 function WIM_GetAlias(theUser, nameOnly)

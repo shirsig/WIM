@@ -184,7 +184,7 @@ local skin = {
 				spacing = 2,
 				points = {
 					{"TOPLEFT", "window", "TOPRIGHT", -30, -70},
-					{"BOTTOMRIGHT", "window", "BOTTOMRIGHT", -8, 55}
+					{"BOTTOMRIGHT", "window", "BOTTOMRIGHT", -13, 55}
 				},
 				buttons = {
 					NormalTexture = [[Interface\AddOns\WIM\textures\shortcuts_frame]],
@@ -192,10 +192,11 @@ local skin = {
 					HighlightTexture = "Interface\\Buttons\\ButtonHilight-Square",
 					HighlightAlphaMode = "ADD",
 					icons = {
-						location = "Interface\\Icons\\Ability_TownWatch",
-						invite = "Interface\\Icons\\Spell_Holy_BlessingOfStrength",
-						friend = "Interface\\Icons\\INV_Misc_GroupNeedMore",
-						ignore = "Interface\\Icons\\Ability_Physical_Taunt",
+						target = [[Interface\Icons\Ability_Hunter_AimedShot]],
+						invite = [[Interface\Icons\Spell_Holy_BlessingOfStrength]],
+						trade = [[Interface\Icons\INV_Misc_Bag_10_Blue]],
+						inspect = [[Interface\Icons\INV_Helmet_44]],
+						ignore = [[Interface\Icons\Ability_Physical_Taunt]],
 					}
 				}
 			}
@@ -392,47 +393,47 @@ db.formatting = {
 
 local buttons = {
 	{
-		id = 'location',
-		title = 'Player Location',
-		click = function(self, button)
---			CloseDropDownMenus()
---			if button == 'LeftButton' then
---				self.parentWindow:SendWho()
---			end
-		end,
-		enter = function(self)
---			local location = self.parentWindow.location ~= '' and self.parentWindow.location or 'Unknown'
---			GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
---			GameTooltip:AddLine('|cff' .. self.parentWindow.classColor .. self.parentWindow.theUser .. '|r')
---			GameTooltip:AddDoubleLine('Location:', '|cffffffff' .. location .. '|r')
---			GameTooltip:AddLine('|cff69ccf0' .. 'Click to update...' .. '|r')
---			GameTooltip:Show()
+		id = 'target',
+		title = 'Target',
+		action = function()
+			TargetByName(this.parentWindow.theUser, true)
 		end,
 	},
 	{
 		id = 'invite',
-		title = 'Invite to Party',
-		click = function(self)
-			InviteUnit(self.parentWindow.theUser)
+		title = 'Invite',
+		action = function()
+			InviteByName(this.parentWindow.theUser)
 		end,
-		enter = function() end,
 	},
 	{
-		id = 'friend',
-		title = 'Add Friend',
-		click = function(self)
-			AddFriend(self.parentWindow.theUser)
+		id = 'trade',
+		title = 'Trade',
+		action = function()
+			TargetByName(this.parentWindow.theUser, true)
+			if UnitName'target' == this.parentWindow.theUser then
+				InitiateTrade'target'
+			end
 		end,
-		enter = function() end,
+	},
+	{
+		id = 'inspect',
+		title = 'Inspect',
+		action = function()
+			TargetByName(this.parentWindow.theUser, true)
+			if UnitName'target' == this.parentWindow.theUser then
+				InspectUnit'target'
+			end
+		end,
 	},
 	{
 		id = 'ignore',
-		title = 'Ignore User',
-		click = function()
+		title = 'Ignore',
+		action = function()
 			local win = this.parentWindow
 			StaticPopupDialogs.WIM_IGNORE = {
 				preferredIndex = STATICPOPUP_NUMDIALOGS,
-				text = format('Are you sure you want to\nignore %s?', "|cff69ccf0" .. win.theUser .. "|r"),
+				text = format('Are you sure you want to\nignore %s?', '|cff69ccf0' .. win.theUser .. '|r'),
 				button1 = 'Yes',
 				button2 = 'No',
 				OnAccept = function()
@@ -445,42 +446,8 @@ local buttons = {
 			}
 			StaticPopup_Show'WIM_IGNORE'
 		end,
-		enter = function() end,
 	},
 }
-
-local function createButton(parent, i)
-	local button = CreateFrame('Button', '$parentShortcutFrameButton' .. i, parent)
-	button.icon = button:CreateTexture(nil, 'BACKGROUND')
-	button.icon:SetAllPoints()
-	button.Enable = function(self)
-		self:Show()
-		self.isEnabled = true
---		parent:UpdateButtons()
-	end
-	button.Disable = function(self)
-		self:Hide()
-		self.isEnabled = false
---		parent:UpdateButtons()
-	end
-	button:SetScript('OnEnter', function(self)
-		if buttons[i].enter then
-			buttons[i].enter(self)
-		else
-			if db.showToolTips then
-				GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
-				GameTooltip:SetText(buttons[i].title)
-			end
-		end
-	end)
-	button:SetScript('OnLeave', function(self)
-		GameTooltip:Hide()
-	end)
-	button:SetScript('OnClick', buttons[i].click)
-
-	button:Enable()
-	return button
-end
 
 local function RGBHexToPercent(rgbStr)
 	local R, G, B = strsub(rgbStr, 1, 2), strsub(rgbStr, 3, 4), strsub(rgbStr, 5, 6)
@@ -728,15 +695,15 @@ function WIM_create_window(user)
 	widgets.class_icon = widgets.Backdrop:CreateTexture(fName .. 'BackdropClassIcon', 'BACKGROUND')
 	widgets.class_icon.widgetName = 'class_icon'
 	widgets.class_icon.parentWindow = f
-	widgets.Backdrop.tl = widgets.Backdrop:CreateTexture(fName .. "Backdrop_TL", 'BORDER')
-	widgets.Backdrop.tr = widgets.Backdrop:CreateTexture(fName .. "Backdrop_TR", 'BORDER')
-	widgets.Backdrop.bl = widgets.Backdrop:CreateTexture(fName .. "Backdrop_BL", 'BORDER')
-	widgets.Backdrop.br = widgets.Backdrop:CreateTexture(fName .. "Backdrop_BR", 'BORDER')
-	widgets.Backdrop.t  = widgets.Backdrop:CreateTexture(fName .. "Backdrop_T" , 'BORDER')
-	widgets.Backdrop.b  = widgets.Backdrop:CreateTexture(fName .. "Backdrop_B" , 'BORDER')
-	widgets.Backdrop.l  = widgets.Backdrop:CreateTexture(fName .. "Backdrop_L" , 'BORDER')
-	widgets.Backdrop.r  = widgets.Backdrop:CreateTexture(fName .. "Backdrop_R" , 'BORDER')
-	widgets.Backdrop.bg = widgets.Backdrop:CreateTexture(fName .. "Backdrop_BG", 'BORDER')
+	widgets.Backdrop.tl = widgets.Backdrop:CreateTexture(fName .. 'Backdrop_TL', 'BORDER')
+	widgets.Backdrop.tr = widgets.Backdrop:CreateTexture(fName .. 'Backdrop_TR', 'BORDER')
+	widgets.Backdrop.bl = widgets.Backdrop:CreateTexture(fName .. 'Backdrop_BL', 'BORDER')
+	widgets.Backdrop.br = widgets.Backdrop:CreateTexture(fName .. 'Backdrop_BR', 'BORDER')
+	widgets.Backdrop.t  = widgets.Backdrop:CreateTexture(fName .. 'Backdrop_T' , 'BORDER')
+	widgets.Backdrop.b  = widgets.Backdrop:CreateTexture(fName .. 'Backdrop_B' , 'BORDER')
+	widgets.Backdrop.l  = widgets.Backdrop:CreateTexture(fName .. 'Backdrop_L' , 'BORDER')
+	widgets.Backdrop.r  = widgets.Backdrop:CreateTexture(fName .. 'Backdrop_R' , 'BORDER')
+	widgets.Backdrop.bg = widgets.Backdrop:CreateTexture(fName .. 'Backdrop_BG', 'BORDER')
 	widgets.from = widgets.Backdrop:CreateFontString(fName .. 'BackdropFrom', 'OVERLAY', 'GameFontNormalLarge')
 	widgets.from.widgetName = 'from'
 	widgets.char_info = widgets.Backdrop:CreateFontString(fName .. 'BackdropCharacterDetails', 'OVERLAY', 'GameFontNormal')
@@ -949,17 +916,17 @@ function WIM_create_window(user)
 	-- PopUp rules
 	f.Pop = function(self, msgDirection, forceResult, forceFocus) -- true to force show, false it ignore rules and force quiet.
 	-- account for variable arguments.
-	if type(msgDirection) == "boolean" then
+	if type(msgDirection) == 'boolean' then
 		forceResult, forceFocus = msgDirection, forceResult
-		msgDirection = "in"
-	elseif msgDirection == nil then
-		msgDirection = "in"
+		msgDirection = 'in'
+	elseif not msgDirection then
+		msgDirection = 'in'
 	end
 
 	local rules = self:GetRuleSet() -- defaults incase unknown
 
 	-- pass isNew to pop ruleset.
-	if forceResult == true then
+	if forceResult then
 		-- go by forceResult and ignore rules
 		if self.tabStrip then
 			-- if(not EditBoxInFocus) then
@@ -1003,7 +970,7 @@ function WIM_create_window(user)
 	end
 
 	-- at this state the message is no longer classified as a new window, reset flag.
-	f.isNew = false;
+	f.isNew = false
 --	CallModuleFunction("OnWindowPopped", self);
 	end
 
@@ -1085,7 +1052,7 @@ function WIM_create_window(user)
 		end
 	end
 	f.ResetAnimation = function(self)
-		if(self.animation.mode) then
+		if self.animation.mode then
 			self:SetClampedToScreen(not WindowParent.animUp and db.clampToScreen)
 			self:SetScale_Orig(db.winSize.scale/100)
 			self:ClearAllPoints()
@@ -1117,18 +1084,45 @@ function WIM_create_window(user)
 	end
 
 	local shortcuts = CreateFrame('Frame', nil, f)
+--	shortcuts:SetScale(.9)
 	shortcuts.widgetName = 'shortcuts'
 	shortcuts.parentWindow = f
 	WIM_ApplySkinToWidget(shortcuts)
 
 	shortcuts.buttons = {}
 	for i = 1, getn(buttons) do
-		tinsert(shortcuts.buttons, createButton(shortcuts, i))
+		local button = CreateFrame('Button', '$parentShortcutFrameButton' .. i, shortcuts)
+		button.icon = button:CreateTexture(nil, 'BACKGROUND')
+		button.icon:SetAllPoints()
+		button.icon:SetTexCoord(.15, .85, .15, .85)
+		button.Enable = function(self)
+			self:Show()
+			self.isEnabled = true
+			--		parent:UpdateButtons()
+		end
+		button.Disable = function(self)
+			self:Hide()
+			self.isEnabled = false
+			--		parent:UpdateButtons()
+		end
+		button:SetScript('OnEnter', function()
+			if WIM_Data.showToolTips then
+				GameTooltip:SetOwner(this, 'ANCHOR_RIGHT')
+				GameTooltip:SetText(buttons[i].title)
+			end
+		end)
+		button:SetScript('OnLeave', function()
+			GameTooltip:Hide()
+		end)
+		button:SetScript('OnClick', buttons[i].action)
+		button:Enable()
+		tinsert(shortcuts.buttons, button)
 	end
 	local skin = skin.message_window.widgets.shortcuts
 
 	local spacing = skin.spacing
 	for i = 1, getn(shortcuts.buttons) do
+		shortcuts.buttons[i].parentWindow = f
 		shortcuts.buttons[i]:ClearAllPoints()
 		if i == 1 then
 			shortcuts.buttons[i]:SetPoint('TOPLEFT', shortcuts, 'TOPLEFT', 0, 0)
@@ -1139,6 +1133,9 @@ function WIM_create_window(user)
 		end
 		shortcuts.buttons[i].index = i
 		shortcuts.buttons[i]:SetNormalTexture(skin.buttons.NormalTexture)
+--		shortcuts.buttons[i]:GetNormalTexture():SetWidth(48)
+--		shortcuts.buttons[i]:GetNormalTexture():SetHeight(48)
+--		shortcuts.buttons[i]:GetNormalTexture():SetPoint('CENTER', 0, -1)
 		shortcuts.buttons[i]:SetPushedTexture(skin.buttons.PushedTexture)
 		shortcuts.buttons[i]:SetHighlightTexture(skin.buttons.HighlightTexture, skin.buttons.HighlightAlphaMode)
 		shortcuts.buttons[i].icon:SetTexture(skin.buttons.icons[buttons[i].id] or [[Interface\Icons\INV_Misc_QuestionMark]])
@@ -1148,7 +1145,7 @@ function WIM_create_window(user)
 	for i = 1, getn(shortcuts.buttons) do
 		if shortcuts.buttons[i].isEnabled then
 			shortcuts.visibleCount = shortcuts.visibleCount + 1
-			shortcuts.buttons[i]:SetHeight(shortcuts:GetWidth())
+			shortcuts.buttons[i]:SetHeight(17)
 		else
 			shortcuts.buttons[i]:SetHeight(.001 - skin.spacing)
 		end
@@ -1157,9 +1154,6 @@ function WIM_create_window(user)
 	if shortcuts.parentWindow and shortcuts.parentWindow.initialized then
 		shortcuts.parentWindow:UpdateProps()
 	end
-
---	loadRegisteredWidgets(f);
---	loadHandlers(f);
 
 	return f
 end
