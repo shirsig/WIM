@@ -8,7 +8,6 @@ WIM_Icon_TheMenu = nil
 WIM_Icon_UpdateInterval = .5
 WIM_CascadeStep = 0
 WIM_MaxMenuCount = 20
-WIM_ClassIcons = {}
 WIM_ClassColors = {}
 WIM_PlayerCache = {}
 WIM_PlayerCacheQueue = {}
@@ -405,12 +404,11 @@ function WIM_PostMessage(user, msg, ttype, from, raw_msg, hotkeyFix)
 		f = getglobal('WIM_msgFrame' .. user) or WIM_create_window(user)
 		WIM_LoadWindowDefaults(f)
 		WIM_SetWindowProps(f)
-		WIM_Windows[user] = {
-			frame = 'WIM_msgFrame' .. user,
-			newMSG = true, 
-			is_visible = false, 
-			last_msg = time(),
-		}
+		WIM_Windows[user] = f
+		f.frame = 'WIM_msgFrame' .. user
+		f.newMSG = true
+		f.is_visible = false
+		f.last_msg = time()
 		f.theUser = user
 		getglobal('WIM_msgFrame' .. user .. 'BackdropFrom'):SetText(WIM_GetAlias(user))
 		WIM_Icon_AddUser(user)
@@ -880,7 +878,7 @@ function WIM_CloseConvo(theUser)
 	
 	getglobal(WIM_Windows[theUser].frame):Hide()
 	getglobal(WIM_Windows[theUser].frame.."ScrollingMessageFrame"):Clear()
-	getglobal(WIM_Windows[theUser].frame.."BackdropClassIcon"):SetTexture[[Interface\AddOns\WIM\Images\classBLANK]]
+	WIM_Windows[theUser].widgets.class_icon:SetTexture[[Interface\AddOns\WIM\Images\classBLANK]]
 	getglobal(WIM_Windows[theUser].frame.."BackdropCharacterDetails"):SetText''
 	WIM_Windows[theUser] = nil
 	WIM_IconItems[theUser] = nil
@@ -889,16 +887,6 @@ function WIM_CloseConvo(theUser)
 end
 
 function WIM_InitClassProps()
-	WIM_ClassIcons[WIM_LOCALIZED_DRUID] 	= "Interface\\AddOns\\WIM\\Images\\classDRUID"
-	WIM_ClassIcons[WIM_LOCALIZED_HUNTER] 	= "Interface\\AddOns\\WIM\\Images\\classHUNTER"
-	WIM_ClassIcons[WIM_LOCALIZED_MAGE]	 	= "Interface\\AddOns\\WIM\\Images\\classMAGE"
-	WIM_ClassIcons[WIM_LOCALIZED_PALADIN] 	= "Interface\\AddOns\\WIM\\Images\\classPALADIN"
-	WIM_ClassIcons[WIM_LOCALIZED_PRIEST] 	= "Interface\\AddOns\\WIM\\Images\\classPRIEST"
-	WIM_ClassIcons[WIM_LOCALIZED_ROGUE] 	= "Interface\\AddOns\\WIM\\Images\\classROGUE"
-	WIM_ClassIcons[WIM_LOCALIZED_SHAMAN] 	= "Interface\\AddOns\\WIM\\Images\\classSHAMAN"
-	WIM_ClassIcons[WIM_LOCALIZED_WARLOCK] 	= "Interface\\AddOns\\WIM\\Images\\classWARLOCK"
-	WIM_ClassIcons[WIM_LOCALIZED_WARRIOR] 	= "Interface\\AddOns\\WIM\\Images\\classWARRIOR"
-	
 	WIM_ClassColors[WIM_LOCALIZED_DRUID]	= "ff7d0a"
 	WIM_ClassColors[WIM_LOCALIZED_HUNTER]	= "abd473"
 	WIM_ClassColors[WIM_LOCALIZED_MAGE]		= "69ccf0"
@@ -922,17 +910,23 @@ function WIM_UserWithClassColor(theUser)
 	end
 end
 
-function WIM_SetWhoInfo(theUser)
-	local classIcon = getglobal(WIM_Windows[theUser].frame .. 'BackdropClassIcon')
-	if WIM_Data.characterInfo.classIcon and WIM_ClassIcons[WIM_PlayerCache[theUser].class] then
-		classIcon:SetTexture(WIM_ClassIcons[WIM_PlayerCache[theUser].class])
-	else
-		classIcon:SetTexture[[Interface\AddOns\WIM\Images\classBLANK]]
-	end
-	if WIM_Data.characterInfo.classColor then
+do
+	local coordinates = {
+		blank = {.5, .5, .5, .75, .75, .5, .75, .75},
+		druid = {0, 0, 0, .25, .25, 0, .25, .25},
+		hunter = {.25, 0, .25, .25, .5, 0, .5, .25},
+		mage = {.5, 0, .5, .25, .75, 0, .75, .25},
+		paladin = {.75, 0, .75, .25, 1, 0, 1, .25},
+		priest = {0, .25, 0, .5, .25, .25, .25, .5},
+		rogue = {.25, .25, .25, .5, .5, .25, .5, .5},
+		shaman = {.5, .25, .5, .5, .75, .25, .75, .5},
+		warlock = {.75, .25, .75, .5, 1, .25, 1, .5},
+		warrior = {0, .5, 0, .75, .25, .5, .25, .75},
+		gm = {.25, .5, .25, .75, .5, .5, .5, .75},
+	}
+	function WIM_SetWhoInfo(theUser)
+		WIM_Windows[theUser].widgets.class_icon:SetTexCoord(unpack(coordinates[strlower(WIM_PlayerCache[theUser].class)]))
 		getglobal(WIM_Windows[theUser].frame .. 'BackdropFrom'):SetText(WIM_UserWithClassColor(theUser))
-	end
-	if WIM_Data.characterInfo.details then
 		local tGuild = ''
 		if WIM_PlayerCache[theUser].guild ~= '' then
 			tGuild = '<' .. WIM_PlayerCache[theUser].guild .. '> '

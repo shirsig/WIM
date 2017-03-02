@@ -63,17 +63,6 @@ local skin = {
 					{'TOPLEFT', 'window', 'TOPLEFT', -10, 12}
 				},
 				is_round = true,
-				blank = {.5, .5, .5, .75, .75, .5, .75, .75},
-				druid = {0, 0, 0, .25, .25, 0, .25, .25},
-				hunter = {.25, 0, .25, .25, .5, 0, .5, .25},
-				mage = {.5, 0, .5, .25, .75, 0, .75, .25},
-				paladin = {.75, 0, .75, .25, 1, 0, 1, .25},
-				priest = {0, .25, 0, .5, .25, .25, .25, .5},
-				rogue = {.25, .25, .25, .5, .5, .25, .5, .5},
-				shaman = {.5, .25, .5, .5, .75, .25, .75, .5},
-				warlock = {.75, .25, .75, .5, 1, .25, 1, .5},
-				warrior = {0, .5, 0, .75, .25, .5, .25, .75},
-				gm = {.25, .5, .25, .75, .5, .5, .5, .75},
 			},
 			from = {
 				points = {
@@ -692,7 +681,7 @@ function WIM_create_window(user)
 	widgets.Backdrop = CreateFrame('Frame', fName .. 'Backdrop', f)
 	widgets.Backdrop:SetToplevel(false)
 	widgets.Backdrop:SetAllPoints(f)
-	widgets.class_icon = widgets.Backdrop:CreateTexture(fName .. 'BackdropClassIcon', 'BACKGROUND')
+	widgets.class_icon = widgets.Backdrop:CreateTexture(nil, 'BACKGROUND')
 	widgets.class_icon.widgetName = 'class_icon'
 	widgets.class_icon.parentWindow = f
 	widgets.Backdrop.tl = widgets.Backdrop:CreateTexture(fName .. 'Backdrop_TL', 'BORDER')
@@ -871,22 +860,6 @@ function WIM_create_window(user)
 		end
 	end
 
-	f.UpdateIcon = function(self)
-		local icon = self.widgets.class_icon
-		icon:SetGradient('VERTICAL', 1, 1, 1, 1, 1, 1)
-		if self.class == '' then
-			icon:SetTexture(skin.message_window.widgets.class_icon.texture)
-			icon:SetTexCoord(unpack(skin.message_window.widgets.class_icon.blank))
-		else
-			icon:SetTexture(skin.message_window.widgets.class_icon.texture)
-			icon:SetTexCoord(unpack(skin.message_window.widgets.class_icon[self.class]))
-		end
-		if skin.message_window.widgets.from.use_class_color then
-			local color = RAID_CLASS_COLORS[self.class]
-			self.widgets.from:SetTextColor(color.r, color.g, color.b)
-		end
-	end
-
 --	f.SendWho = function(self)
 --
 --		if self.isGM then
@@ -932,7 +905,7 @@ function WIM_create_window(user)
 			-- if(not EditBoxInFocus) then
 			ShowContainer()
 			self.tabStrip:JumpToTab(self)
-			if(not getVisibleChatFrameEditBox() and (rules.autofocus or forceFocus)) then
+			if not getVisibleChatFrameEditBox() and (rules.autofocus or forceFocus) then
 				self.widgets.msg_box:SetFocus()
 			end
 			-- end
@@ -1047,7 +1020,6 @@ function WIM_create_window(user)
 				a.elapsed, a.time = 0, .5
 				a.scaleLimit = .001 -- _G.math.max(_G.math.ceil((100-_G.UIParent:GetScale()*100)/2)/100 + .04, .01);
 				a.mode = "HIDE"; -- this starts the animation
-				dPrint("Animation Started: "..self:GetName())
 			end
 		end
 	end
@@ -1059,7 +1031,6 @@ function WIM_create_window(user)
 			self:SetPoint("TOPLEFT", WindowParent, "BOTTOMLEFT", self.animation.initLeft, self.animation.initTop - WindowParent:GetBottom())
 			self.widgets.chat_display:Show()
 			self.widgets.chat_display:SetParent(self)
-			dPrint("Animation Reset: " .. self:GetName())
 		end
 		for key, _ in pairs(self.animation) do
 			self.animation[key] = nil;
@@ -1079,7 +1050,7 @@ function WIM_create_window(user)
 	end
 
 	-- enforce that all core widgets have parentWindow set.
-	for _, w in pairs(f.widgets) do
+	for _, w in f.widgets do
 		w.parentWindow = f
 	end
 
@@ -1105,6 +1076,7 @@ function WIM_create_window(user)
 			self.isEnabled = false
 			--		parent:UpdateButtons()
 		end
+		local i = i
 		button:SetScript('OnEnter', function()
 			if WIM_Data.showToolTips then
 				GameTooltip:SetOwner(this, 'ANCHOR_RIGHT')
@@ -1167,14 +1139,6 @@ function WIM_LoadWindowDefaults(f)
 
 	f.customSize = false
 
-	f.guild = ""
-	f.level = ""
-	f.race = ""
-	f.class = ""
-	f.location = ""
-	f.demoSave = nil
-	f.classColor = "ffffff"
-
 --	f.isGM = lists.gm[f.theUser]
 
 --	f:UpdateIcon()
@@ -1200,10 +1164,6 @@ function WIM_LoadWindowDefaults(f)
 --	updateScrollBars(f)
 
 	f.widgets.close.forceShift = false
-
-	-- load Registered Widgets (if not created already) & set defaults
---	loadRegisteredWidgets(f)
---	loadHandlers(f)
 
 	-- process registered widgets
 	local widgetName, widgetObj
